@@ -1,0 +1,3 @@
+[submodule "vendor/kiwi"]
+	path = vendor/kiwi
+	url = https://github.com/nucleic/kiwi

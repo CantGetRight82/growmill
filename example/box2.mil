@@ -1,0 +1,14 @@
+{
+top: p.top + 10;
+left: p.left + 10;
+right: p.right - 10;
+bottom: next.top - 10;
+stroke: red;
+}
+
+< {
+top: prev.bottom + 10;
+bottom: p.bottom - 10;
+stroke: blue;
+height: prev.height;
+}

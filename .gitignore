@@ -1,0 +1,11 @@
+
+CMakeFiles
+CMakeCache.txt
+CMakeScripts/
+Debug/
+Makefile
+cmake_install.cmake
+growmill.build/
+growmill.xcodeproj/
+output/
+node_modules
