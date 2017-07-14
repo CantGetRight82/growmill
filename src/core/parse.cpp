@@ -55,15 +55,10 @@ Node* NodeParser::parse(AbstractVirtualDisk& disk, string infile) {
 
 		size_t filepos = pos + 9;
 		string file = str.substr( filepos, end-filepos-1);
-		/* cout<<dir<<endl; */
-		/* cout<<file<<endl; */
 
 		string include = disk.getContents( dir + file );
 		str = str.substr(0, pos) + include + str.substr(end+1);
 	}
-
-
-	cout<<str<<endl;
 
 	const char* buffer = str.c_str();
 	vector<SymbolPos> positions = SymbolPos::parse( str, "{}:;`" );
@@ -137,7 +132,12 @@ Node* NodeParser::parse(AbstractVirtualDisk& disk, string infile) {
 				} else {
 					top->atts[ key ] = str;
 				}
-			}
+                key = "";
+            } else {
+                if(top->has(str)) {
+                    top->atts.erase(str);
+                }
+            }
 		}
 	}
 	return root;

@@ -7,6 +7,7 @@
 
 #include "VarProvider.h"
 #include "Color.h"
+#include "Rect.h"
 #include "../../vendor/kiwi/kiwi/kiwi.h"
 
 using namespace std;
@@ -37,6 +38,10 @@ class Node : VarProvider {
 		void initVars();
 		string ids();
 		int idx(Node* child);
+
+		Rect rect() {
+			return Rect( top(), left(), right()-left(), bottom()-top() );
+		}
 
 		float top();
 		float right();
