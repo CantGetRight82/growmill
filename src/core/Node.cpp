@@ -15,6 +15,10 @@ class RefVar {
 
 Node* Node::zero = NULL;
 
+bool Node::has(string key) {
+	return atts.count(key);
+}
+
 void Node::initVars() {
 	string keys[] = { "top", "right", "bottom", "left", "width", "height" };
 	for(string key : keys) {
@@ -87,18 +91,27 @@ int Node::atti(string key) {
 	return atoi( atts[key].c_str() );
 }
 
-uint32_t Node::color(string key) {
+Color Node::color(string key) {
 	string val = atts[key];
+	return Color::fromString( val );
+	/*
 	map<string,uint32_t> namedColors ={
 		{ "red", 0xFF0000 },
 		{ "green", 0x00FF00 },
 		{ "blue", 0x0000FF },
 	};
+	uint32_t hex;
 	if(namedColors.count(val)) {
-		return namedColors[val];
+		hex = namedColors[val];
+	} else {
+		hex = strtoul(val.c_str(), NULL, 16);
 	}
-	return strtoul(val.c_str(), NULL, 16);
+
+	return Color(
+			);
+			*/
 }
+
 float Node::attf(string key) {
 	if(atts.count(key)) {
 		return atof( atts[key].c_str() );

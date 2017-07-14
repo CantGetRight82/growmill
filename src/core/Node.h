@@ -6,6 +6,7 @@
 #include <assert.h>
 
 #include "VarProvider.h"
+#include "Color.h"
 #include "../../vendor/kiwi/kiwi/kiwi.h"
 
 using namespace std;
@@ -25,7 +26,9 @@ class Node : VarProvider {
 		void renderJSON(std::ostream& to);
 		int atti(string key);
 		float attf(string key);
-		uint32_t color(string key);
+		Color color(string key);
+
+		bool has(string key);
 
 		Node() : parent(NULL), prev(NULL), next(NULL) {
 			initVars();

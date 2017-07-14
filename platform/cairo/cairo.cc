@@ -38,23 +38,30 @@ float ucharToNormal(unsigned char src) {
 
 
 void render(cairo_t* cr, Node* node) {
-	uint32_t stroke = node->color("stroke");
+	bool stroke = node->has("stroke");
+	bool fill = node->has("fill");
 
+	if(stroke || fill) {
+		cairo_rectangle(cr,
+				node->left(),
+				node->top(),
+				node->right()-node->left(),
+				node->bottom()-node->top()
+				);
 
-	cairo_rectangle(cr,
-			node->left(),
-			node->top(),
-			node->right()-node->left(),
-			node->bottom()-node->top()
-	);
-
-	cairo_set_source_rgb(cr,
-			ucharToNormal(stroke>>16),
-			ucharToNormal((stroke>>8)&0xFF),
-			ucharToNormal(stroke&0xFF)
-			);
-	cairo_set_line_width (cr, 1.0);
-	cairo_stroke( cr );
+		if(stroke) {
+			Color color = node->color("stroke");
+			cairo_set_source_rgb(cr, color.r, color.g, color.b );
+			cairo_set_line_width (cr, 1.0);
+			if(fill) {
+				cairo_stroke_preserve( cr );
+			} else{
+				cairo_stroke( cr );
+			}
+		}
+		if(fill) {
+		}
+	}
 	
 	for(Node* n : node->subs) {
 		render(cr, n);
