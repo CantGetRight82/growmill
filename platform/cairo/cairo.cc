@@ -31,37 +31,25 @@ class VirtualDisk : public AbstractVirtualDisk {
 };
 
 
-float ucharToNormal(unsigned char src) {
-
-    return (src+0.0f)/255.0f;
-}
-
-
 void render(cairo_t* cr, Node* node) {
 	bool stroke = node->has("stroke");
 	bool fill = node->has("fill");
 
-	if(stroke || fill) {
-		cairo_rectangle(cr,
-				node->left(),
-				node->top(),
-				node->right()-node->left(),
-				node->bottom()-node->top()
-				);
+	Rect rect = node->rect();
 
 		if(stroke) {
+			cairo_rectangle(cr, rect.x, rect.y, rect.width, rect.height);
 			Color color = node->color("stroke");
 			cairo_set_source_rgb(cr, color.r, color.g, color.b );
 			cairo_set_line_width (cr, 1.0);
-			if(fill) {
-				cairo_stroke_preserve( cr );
-			} else{
-				cairo_stroke( cr );
-			}
+			cairo_stroke( cr );
 		}
 		if(fill) {
+			cairo_rectangle(cr, rect.x, rect.y, rect.width, rect.height);
+			Color color = node->color("fill");
+			cairo_set_source_rgb(cr, color.r, color.g, color.b );
+			cairo_fill( cr );
 		}
-	}
 	
 	for(Node* n : node->subs) {
 		render(cr, n);
