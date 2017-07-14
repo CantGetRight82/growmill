@@ -6,9 +6,3 @@ height: 20;
 stroke: red;
 }
 
-< {
-top: prev.bottom + 10;
-bottom: p.bottom-10;
-stroke: blue;
-}
-
