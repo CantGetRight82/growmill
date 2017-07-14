@@ -4,52 +4,28 @@
 #include "core/AbstractVirtualDisk.h"
 #include "core/growmill.h"
 
-class VirtualDisk : public AbstractVirtualDisk {
-	public:
-	VirtualDisk() {
-	}
-	std::string getContents(std::string path) {
-		FILE* fh = fopen( path.c_str(), "rb");
-		if(fh == NULL) {
-			throw path + " does not exist";
-		}
-
-		fseek(fh, 0, SEEK_END);
-		int size = ftell(fh);
-		fseek(fh, 0, SEEK_SET);
-
-
-		char* buffer = new char[ size+1 ];
-		fread(buffer, 1, size, fh);
-		fclose(fh);
-		buffer[size] = '\0';
-		string result = buffer;
-		delete [] buffer;
-		return result;
-	}
-
-};
-
+#include "VirtualDisk.h"
 
 void render(cairo_t* cr, Node* node) {
 	bool stroke = node->has("stroke");
 	bool fill = node->has("fill");
 
+	
 	Rect rect = node->rect();
+	if(stroke) {
+		cairo_rectangle(cr, rect.x, rect.y, rect.width, rect.height);
+		Color color = node->color("stroke");
+		cairo_set_source_rgb(cr, color.r, color.g, color.b );
+		cairo_set_line_width (cr, 1.0);
+		cairo_stroke( cr );
+	}
+	if(fill) {
+		cairo_rectangle(cr, rect.x, rect.y, rect.width, rect.height);
+		Color color = node->color("fill");
+		cairo_set_source_rgb(cr, color.r, color.g, color.b );
+		cairo_fill( cr );
+	}
 
-		if(stroke) {
-			cairo_rectangle(cr, rect.x, rect.y, rect.width, rect.height);
-			Color color = node->color("stroke");
-			cairo_set_source_rgb(cr, color.r, color.g, color.b );
-			cairo_set_line_width (cr, 1.0);
-			cairo_stroke( cr );
-		}
-		if(fill) {
-			cairo_rectangle(cr, rect.x, rect.y, rect.width, rect.height);
-			Color color = node->color("fill");
-			cairo_set_source_rgb(cr, color.r, color.g, color.b );
-			cairo_fill( cr );
-		}
 	
 	for(Node* n : node->subs) {
 		render(cr, n);

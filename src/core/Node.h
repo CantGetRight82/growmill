@@ -40,7 +40,7 @@ class Node : VarProvider {
 		int idx(Node* child);
 
 		Rect rect() {
-			return Rect( top(), left(), right()-left(), bottom()-top() );
+			return Rect( left(), top(), right()-left(), bottom()-top() );
 		}
 
 		float top();
