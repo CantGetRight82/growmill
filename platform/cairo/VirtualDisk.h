@@ -19,7 +19,7 @@ class VirtualDisk : public AbstractVirtualDisk {
 		fread(buffer, 1, size, fh);
 		fclose(fh);
 		buffer[size] = '\0';
-		string result = buffer;
+		std::string result = buffer;
 		delete [] buffer;
 		return result;
 	}

@@ -4,6 +4,10 @@
 #include "ExpressionParser.h"
 
 using namespace kiwi;
+using std::string;
+using std::vector;
+using std::map;
+using std::endl;
 
 class RefVar {
 	public:

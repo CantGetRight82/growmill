@@ -4,8 +4,10 @@
 #include "../../vendor/kiwi/kiwi/kiwi.h"
 #include "../../vendor/kiwi/kiwi/debug.h"
 
+using std::string;
+using std::vector;
 
-string trimBefore( const char* buffer, vector<SymbolPos>& positions, int i) {
+string trimBefore( const char* buffer, std::vector<SymbolPos>& positions, int i) {
 	int end = positions[i].pos-1;
 	int start = i>0 ? positions[i-1].pos+1 : 0;
 	while( start < end && isspace(buffer[start]) ) { start++; }

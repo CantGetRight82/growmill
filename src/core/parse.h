@@ -8,6 +8,6 @@
 
 class NodeParser {
 	public:
-		static Node* parse(AbstractVirtualDisk& disk, string str);
+		static Node* parse(AbstractVirtualDisk& disk, std::string str);
 };
 

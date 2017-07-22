@@ -3,6 +3,6 @@ top: p.top + 10;
 left: p.left + 10;
 right: p.right - 10;
 bottom: p.bottom - 10;
-fill: red;
-text: 1234;
+stroke: red;
+text: lola;
 }
