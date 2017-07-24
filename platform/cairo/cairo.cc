@@ -7,15 +7,15 @@
 #include "core/growmill.h"
 
 #include "VirtualDisk.h"
+#include "CairoText.h"
 
 
 using std::stoi;
 using std::cerr;
 
-FT_Library library;
 
 
-void render(cairo_t* cr, Node* node) {
+void render(cairo_t* cr, Node* node, CairoText& text) {
 	
 	Rect rect = node->rect();
 	if(node->has("stroke")) {
@@ -34,28 +34,13 @@ void render(cairo_t* cr, Node* node) {
 
     
     if(node->has("text")) {
-        FT_Face ftface;
-        assert( FT_New_Face( library, "/Library/Fonts/Arial.ttf", 0, &ftface ) == 0);
         
-        const char* str = node->str("text").c_str();
+        text.render(node);
         
-        //settings
-        cairo_font_face_t* face = cairo_ft_font_face_create_for_ft_face(ftface, 0);
-        cairo_set_font_face(cr, face);
-        
-        //extents
-        cairo_text_extents_t extents;
-        cairo_text_extents(cr, str, &extents);
-        
-        cairo_set_source_rgb(cr, 0,0,0);
-        
-        cairo_move_to(cr, rect.x, rect.y + extents.height);
-        cairo_show_text(cr, str);
-        cairo_fill( cr );
     }
 	
 	for(Node* n : node->subs) {
-		render(cr, n);
+		render(cr, n, text);
 	}
 }
 
@@ -66,29 +51,28 @@ int main(int c, const char** argv) {
 		return 1;
 	}
 
-    assert( FT_Init_FreeType( &library ) == 0);
     
     
 	const char* infile = argv[1];
 	const char* outfile = argv[2];
 	int width = stoi(argv[3]);
 	int height = stoi(argv[4]);
-
-	VirtualDisk disk;
-	Node* root = GrowMill::parse(disk, infile, width, height);
-
-	if(width == 0) {
-		width = root->right();
-		height = root->bottom();
-	}
-
+    
+    
     cairo_t *cr;
     cairo_surface_t *surface;
-
+    
     surface = (cairo_surface_t *)cairo_svg_surface_create(outfile, width, height);
     cr = cairo_create(surface);
 
-	render(cr, root);
+    CairoText text(cr);
+	VirtualDisk disk;
+	Node* root = GrowMill::parse(disk, text, infile, width, height);
+
+
+
+
+	render(cr, root, text);
 
 	/*
      

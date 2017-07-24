@@ -1,8 +1,7 @@
 {
-top: p.top + 10;
-left: p.left + 10;
-right: p.right - 10;
-bottom: p.bottom - 10;
+tlr: out 10;
 stroke: red;
-text: lola;
+text: 
+The descender is the vertical distance from the horizontal baseline to the lowest 'character' coordinate in a font face. Unfortunately, font formats don't define the descender in a uniform way. For some formats, it represents the descent of all capital latin characters (without accents), for others it is the ascent of the lowest accented character, and finally, other formats define it as being equal to bbox.yMin. This field is negative for values below the baseline.;
 }
+

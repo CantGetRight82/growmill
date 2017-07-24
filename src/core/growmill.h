@@ -2,13 +2,17 @@
 
 #include "Node.h"
 #include "AbstractVirtualDisk.h"
+#include "AbstractTextSizer.h"
 #include "parse.h"
 
 
 
 class GrowMill {
 	public:
-		static Node* parse(AbstractVirtualDisk& disk, std::string infile, int outerWidth, int outerHeight) {
+		static Node* parse(
+                           AbstractVirtualDisk& disk,
+                           AbstractTextSizer& textSizer,
+                           std::string infile, int outerWidth, int outerHeight) {
 			Node* root = NodeParser::parse(disk, infile);
 			root->atts["left"] = "0";
 			root->atts["top"] = "0";
@@ -25,8 +29,11 @@ class GrowMill {
 
 			try {
 				kiwi::Solver* solver = new kiwi::Solver();
-				root->constrain( solver ); 
-				solver->updateVariables();
+				root->constrain( solver );
+                solver->updateVariables();
+                root->fillBlanks( solver, textSizer );
+                solver->updateVariables();
+				
 			} catch(kiwi::UnsatisfiableConstraint e) {
 				std::cout<<e.what()<<std::endl;
 				std::cout<<"--------------------------------------"<<std::endl;

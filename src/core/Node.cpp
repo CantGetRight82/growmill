@@ -7,15 +7,9 @@ using namespace kiwi;
 using std::string;
 using std::vector;
 using std::map;
-using std::endl;
 
-class RefVar {
-	public:
-		string ref;
-		string key;
-		RefVar(string ref, string key) : ref(ref), key(key) {
-		}
-};
+using std::cout;
+using std::endl;
 
 Node* Node::zero = NULL;
 
@@ -80,16 +74,52 @@ void Node::constrain(Solver* solver) {
 		}
 	}
 
-	for( Node* n : subs) {
-		n->constrain( solver );
-	}
+    for( Node* n : subs) {
+        n->constrain( solver );
+    }
 
+}
+
+void Node::fillBlanks(Solver* solver, AbstractTextSizer& textSizer) {
+    
+    int xcount = 0, ycount = 0;
+    for(string varkey : usedVars) {
+        if(varkey == "left" || varkey == "width" || varkey == "right") { xcount++; }
+        if(varkey == "top" || varkey == "height" || varkey == "bottom") { ycount++; }
+    }
+    
+    if(has("text")) {
+        bool needsWidth = xcount<2;
+        bool needsHeight = ycount<2;
+        if(needsWidth || needsHeight) {
+            float maxw = needsWidth ? -1 : right()-left();
+        
+            float outw, outh;
+            textSizer.measure(this, maxw, &outw, &outh);
+            
+            if(needsWidth) {
+                addStay(solver, "width", outw);
+            }
+            
+            if(needsHeight) {
+                addStay(solver, "height", outh);
+            }
+
+            cout<<outw<<"x"<<outh<<endl;
+        }
+    }
+
+    
+    for( Node* n : subs) {
+        n->fillBlanks(solver, textSizer);
+    }
 }
 
 void Node::addStay(Solver* solver, string key, float val) {
 	solver->addEditVariable( vars[key], strength::strong );
 	solver->suggestValue( vars[key], val );
 }
+
 
 int Node::atti(string key) {
 	return atoi( atts[key].c_str() );
@@ -98,22 +128,6 @@ int Node::atti(string key) {
 Color Node::color(string key) {
 	string val = atts[key];
 	return Color::fromString( val );
-	/*
-	map<string,uint32_t> namedColors ={
-		{ "red", 0xFF0000 },
-		{ "green", 0x00FF00 },
-		{ "blue", 0x0000FF },
-	};
-	uint32_t hex;
-	if(namedColors.count(val)) {
-		hex = namedColors[val];
-	} else {
-		hex = strtoul(val.c_str(), NULL, 16);
-	}
-
-	return Color(
-			);
-			*/
 }
 
 float Node::attf(string key) {
@@ -165,6 +179,10 @@ string Node::ids() {
 	}
 	return "0";
 }
+double Node::top() { return vars["top"].value(); }
+double Node::right() { return vars["right"].value(); }
+double Node::bottom() { return vars["bottom"].value(); }
+double Node::left() { return vars["left"].value(); }
 
 int Node::idx(Node* child) {
 	for(int i=0; i<subs.size(); i++) {
@@ -173,14 +191,19 @@ int Node::idx(Node* child) {
 	return -1;
 }
 
-float Node::top() { return vars["top"].value(); }
-float Node::right() { return vars["right"].value(); }
-float Node::bottom() { return vars["bottom"].value(); }
-float Node::left() { return vars["left"].value(); }
-
 vector<string> Node::attsplit(string key, string delims) {
 	return split( atts[key], delims);
 }
+
+Rect Node::rect() {
+	float top = vars["top"].value();
+	float left = vars["left"].value();
+	float bottom = vars["bottom"].value();
+	float right = vars["right"].value();
+
+	return Rect( left, top, right-left, bottom-top );
+}
+
 
 Node* Node::getNode(string name) {
 	if(name == "p") { return parent; }
@@ -192,11 +215,17 @@ Node* Node::getNode(string name) {
 
 kiwi::Variable Node::getVar(std::string key) {
 	vector<string> parts = split(key,".");
+    Node* node;
+    string varkey;
 	if(parts.size() == 1) {
-		return vars[key];
-	}
-	Node* node = getNode(parts[0]);
-	return node->vars[ parts[1] ];
+        node = this;
+        varkey = key;
+    } else {
+        node = getNode(parts[0]);
+        varkey = parts[1];
+    }
+    node->usedVars.push_back(varkey);
+	return node->vars[ varkey ];
 
 }
 vector<string> Node::split(string val, string delims) {
