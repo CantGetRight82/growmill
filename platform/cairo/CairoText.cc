@@ -34,11 +34,25 @@ vector<cairo_glyph_t> CairoText::glyphs(Node* node, float maxw, float* outw, flo
             int err = FT_Load_Glyph( ftface, glyph.index, 0 );
             assert( err == 0);
             
+
+            if(FT_HAS_KERNING(ftface) && lastx>0) {
+                FT_Vector vec;
+                FT_Get_Kerning( ftface,
+                               result.back().index, glyph.index,
+                               FT_KERNING_UNFITTED ,&vec);
+                if(vec.x != 0) {
+                    double dx = (vec.x/64.0);
+                    lastx += dx;
+                }
+            }
+            
+            
             glyph.x = lastx;
             glyph.y = lasty;
             
-            result.push_back( glyph );
+            
             lastx += ftface->glyph->advance.x >> 6;
+                                  result.push_back( glyph );
             
             if(maxw>0 && lastx > maxw) {
                 //TODO: if char == space
