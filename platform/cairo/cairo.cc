@@ -1,6 +1,5 @@
 #include "core/parse.h"
 #include "cairo-svg.h"
-
 #include "cairo-ft.h"
 
 #include "core/AbstractVirtualDisk.h"
@@ -17,7 +16,7 @@ using std::cerr;
 
 void render(cairo_t* cr, Node* node, CairoText& text) {
 	
-	Rect rect = node->rect();
+    Rect rect = node->rect();
 	if(node->has("stroke")) {
 		cairo_rectangle(cr, rect.x, rect.y, rect.width, rect.height);
 		Color color = node->color("stroke");
@@ -47,7 +46,7 @@ void render(cairo_t* cr, Node* node, CairoText& text) {
 
 int main(int c, const char** argv) {
 	if(c<5) {
-        std::cerr<<"Usage: growc <in.mil> <out.svg> <target-width> <target-height>"<<std::endl;
+        std::cerr<<"Usage: growc <in.mil> <out.svg|png> <target-width> <target-height>"<<std::endl;
 		return 1;
 	}
 
@@ -61,8 +60,13 @@ int main(int c, const char** argv) {
     
     cairo_t *cr;
     cairo_surface_t *surface;
-    
-    surface = (cairo_surface_t *)cairo_svg_surface_create(outfile, width, height);
+    bool ispng = strstr(outfile, ".png");
+    if(ispng) {
+        printf("png\n");
+        surface = (cairo_surface_t *)cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+    } else {
+        surface = (cairo_surface_t *)cairo_svg_surface_create(outfile, width, height);
+    }
     cr = cairo_create(surface);
 
     CairoText text(cr);
@@ -73,6 +77,13 @@ int main(int c, const char** argv) {
 
 
 	render(cr, root, text);
+    
+    
+    
+    
+    if(ispng) {
+        cairo_surface_write_to_png( surface, outfile);
+    }
 
 	/*
      
