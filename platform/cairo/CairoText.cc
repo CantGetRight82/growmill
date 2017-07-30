@@ -55,7 +55,7 @@ vector<cairo_glyph_t> CairoText::glyphs(Node* node, float maxw, float* outw, flo
                                   result.push_back( glyph );
             
             if(maxw>0 && lastx > maxw) {
-                //TODO: if char == space
+                //TODO: if str.at(i) == space
                 int j = i;
                 while(j>0 && str.at(j) != ' ') { j--; result.pop_back(); }
                 if(j==0) {

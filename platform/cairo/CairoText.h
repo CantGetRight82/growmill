@@ -7,6 +7,10 @@
 #include "../src/core/AbstractTextSizer.h"
 #include "cairo-ft.h"
 
+#include <ftoutln.h>
+
+#include <fstream>
+
 class CairoText : public AbstractTextSizer {
 	private:
         cairo_t* cr;
@@ -59,9 +63,56 @@ class CairoText : public AbstractTextSizer {
         
         cairo_show_glyphs(cr, &glyphs[0], glyphs.size());
         cairo_fill( cr );
-    }
     
-    void renderCore(Node* node, std::ofstream& str) {
+    }
+    static int moveto( const FT_Vector*  to, void* user ) {
+        using std::ofstream;
+        ofstream& os = *(static_cast<ofstream*>(user));
+        os << "M" << ( (to->x<<0) - 0) << "," << (to->y) << std::endl;
+        return 0;
+    }
+    static int lineto( const FT_Vector*  to, void* user ) {
+        using std::ofstream;
+        ofstream& os = *(static_cast<ofstream*>(user));
+        os << "L" << ( (to->x<<0) - 0) << "," << (to->y) << std::endl;
+        return 0;
+    }
+    static int quadto( const FT_Vector* control, const FT_Vector* to, void* user ) {
+        using std::ofstream;
+        ofstream& os = *(static_cast<ofstream*>(user));
+//        os << (to->x) << "," << (to->y) << std::endl;
+        return 0;
+    }
+    static int cubeto( const FT_Vector* control1, const FT_Vector* control2, const FT_Vector* to, void* user ) {
+        using std::ofstream;
+        ofstream& os = *(static_cast<ofstream*>(user));
+//        os << (to->x) << "," << (to->y) << std::endl;
+        return 0;
+    }
+    void renderCore(Node* node, std::ofstream& os) {
+        Rect rect = node->rect();
         
+        setContext(node);
+        std::vector<cairo_glyph_t> glyphs = this->glyphs( node, rect.width, NULL, NULL );
+
+        FT_Outline_Funcs funcs;
+        funcs.move_to = CairoText::moveto;
+        funcs.line_to = CairoText::lineto;
+        funcs.conic_to = CairoText::quadto;
+        funcs.cubic_to = CairoText::cubeto;
+        funcs.shift = 0;
+        funcs.delta = 0;
+        for(cairo_glyph_t cg : glyphs) {
+            int err = FT_Load_Glyph( ftface, cg.index, 0 );
+            assert( err == 0);
+            
+            
+            FT_Outline_Decompose( &ftface->glyph->outline, &funcs, (void*)&os);
+
+            
+
+        }
+        cairo_show_glyphs(cr, &glyphs[0], glyphs.size());
+        cairo_fill( cr );
     }
 };
