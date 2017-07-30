@@ -12,6 +12,7 @@
 
 using std::stoi;
 using std::cerr;
+using std::endl;
 
 std::ofstream svg;
 
@@ -36,6 +37,8 @@ void rectPath(cairo_t* cr, Node* node, bool stroke, double x, double y, double w
 
 void renderCore(cairo_t* cr, Node* node, CairoText& text) {
     Rect rect = node->rect();
+    
+    svg << "<g>" << endl;
     if(node->has("fill") || node->has("stroke")) {
         svg << "<rect" <<
             " x='"<<rect.x<<"'" <<
@@ -47,8 +50,6 @@ void renderCore(cairo_t* cr, Node* node, CairoText& text) {
             double radius = node->number("border-radius");
             svg << " rx='"<<radius<<"' ry='"<<radius<<"'";
         }
-        
-        
         
         svg << " style='";
         if(node->has("stroke")) {
@@ -62,6 +63,15 @@ void renderCore(cairo_t* cr, Node* node, CairoText& text) {
         svg << "' />";
 
     }
+    
+    if(node->has("text")) {
+        
+        text.renderCore(node, svg);
+        
+    }
+    
+    svg << "</g>" << endl;
+    
 }
 
 void render(cairo_t* cr, Node* node, CairoText& text) {

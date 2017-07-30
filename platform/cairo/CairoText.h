@@ -60,4 +60,8 @@ class CairoText : public AbstractTextSizer {
         cairo_show_glyphs(cr, &glyphs[0], glyphs.size());
         cairo_fill( cr );
     }
+    
+    void renderCore(Node* node, std::ofstream& str) {
+        
+    }
 };
