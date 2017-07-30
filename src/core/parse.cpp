@@ -104,13 +104,8 @@ Node* NodeParser::parse(AbstractVirtualDisk& disk, string infile) {
 				node = new Node();
 			}
 
-			node->parent = top;
 			if(top) {
-				if(top->subs.size()) {
-					node->prev = top->subs.back();
-					node->prev->next = node;
-				}
-				top->subs.push_back( node );
+                top->add( node );
 			}
 			stack.push_back( node );
 			top = node;
@@ -138,6 +133,8 @@ Node* NodeParser::parse(AbstractVirtualDisk& disk, string infile) {
             } else {
                 if(top->has(str)) {
                     top->atts.erase(str);
+                } else if(str == "clear") {
+                    top->clear();
                 }
             }
 		}

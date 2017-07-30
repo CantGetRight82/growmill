@@ -11,6 +11,7 @@ using std::map;
 using std::cout;
 using std::endl;
 
+
 Node* Node::zero = NULL;
 
 bool Node::has(string key) {
@@ -43,32 +44,9 @@ void Node::constrain(Solver* solver) {
 			if(val.find("out") != std::string::npos) {
 				vector<string> parts = split(val," ");
 				assert(parts.size() == 2);
+                
+                val = getOut( key, parts[1], side);
 
-				if(key == "top") {
-					if(prev) {
-						val = "prev.bottom + "+parts[1];
-					} else {
-						val = "p.top + "+parts[1];
-					}
-				} else if(key == "left") {
-					if(prev) {
-						val = "prev.right + "+parts[1];
-					} else {
-						val = "p.left + "+parts[1];
-					}
-				} else if(key == "right") {
-					if(next) {
-						val = "next.left - "+parts[1];
-					} else {
-						val = "p.right - "+parts[1];
-					}
-				} else if(key == "bottom") {
-					if(next) {
-						val = "next.top - "+parts[1];
-					} else {
-						val = "p.bottom - "+parts[1];
-					}
-				}
 			}
 			ExpressionParser::parse( key, val, *solver, *this);
 		}
@@ -80,6 +58,45 @@ void Node::constrain(Solver* solver) {
 
 }
 
+
+std::string Node::getOut(std::string key, std::string val, bool side) {
+    if(!side) {
+        if(key == "top") {
+            return prev ? "prev.bottom + " + val : "p.top + " + val;
+        }
+        if(key == "left") {
+            return "p.left + " + val;
+        }
+        if(key == "right") {
+            return "p.right - " + val;
+        }
+        if(key == "bottom") {
+            return next ? "next.top - "+val : "p.bottom - "+val;
+        }
+    } else {
+        if(key == "top") {
+            return "p.top + " + val;
+        }
+        if(key == "left") {
+            return prev ? "prev.right + "+val : "p.left + " + val;
+        }
+        if(key == "right") {
+            return next ? "next.left - "+val : "p.right - " + val;
+        }
+        if(key == "bottom") {
+            return "p.bottom - "+val;
+        }
+    }
+    return "";
+}
+
+bool Node::addOutZero(kiwi::Solver* solver, std::string key) {
+    if(std::find(usedVars.begin(), usedVars.end(), key) == usedVars.end()) {
+        ExpressionParser::parse( key, getOut(key, "0", false), *solver, *this);
+        return true;
+    }
+    return false;
+}
 void Node::fillBlanks(Solver* solver, AbstractTextSizer& textSizer) {
     
     int xcount = 0, ycount = 0;
@@ -104,8 +121,19 @@ void Node::fillBlanks(Solver* solver, AbstractTextSizer& textSizer) {
             if(needsHeight) {
                 addStay(solver, "height", outh);
             }
-
-            cout<<outw<<"x"<<outh<<endl;
+        }
+    } else {
+        while(xcount<2) {
+            if(!addOutZero(solver,"left")) {
+                addOutZero(solver,"right");
+            }
+            xcount++;
+        }
+        while(ycount<2) {
+            if(!addOutZero(solver,"top")) {
+                addOutZero(solver,"bottom");
+            }
+            ycount++;
         }
     }
 
@@ -121,30 +149,73 @@ void Node::addStay(Solver* solver, string key, float val) {
 }
 
 
-int Node::atti(string key) {
-	return atoi( atts[key].c_str() );
-}
 
 Color Node::color(string key) {
 	string val = atts[key];
 	return Color::fromString( val );
 }
 
-float Node::attf(string key) {
-	if(atts.count(key)) {
-		return atof( atts[key].c_str() );
-	}
-	return NAN;
+double Node::nodeNumber(string val) {
+    vector<string> parts = split(val,".");
+    Node* node = parts.size() > 1 ? getNode(parts[0]) : this;
+    string key = parts.back();
+    if(node->atts.count(key)) {
+        return node->number(key);
+    }
+    if(node->vars.count(key)) {
+        return node->vars[ key ].value();
+    }
+    return 0;
+
+}
+
+double Node::number(string key) {
+    if(atts.count(key)) {
+        string val = atts[key];
+        bool numeric= true;
+        for(int i=0; i<val.size(); i++) {
+            if(isalpha(val[i])) {
+                numeric = false;
+                break;
+            }
+        }
+        if(numeric) {
+            return strtod( val.c_str(), NULL );
+        } else {
+            vector<ExpressionPart> parts = ExpressionPart::parse( val );
+            double result = 0;
+            
+            for(ExpressionPart part : parts) {
+                double nr = strtod(part.nr.c_str(),NULL);
+                if(part.var.size()) {
+                    result += nodeNumber( part.var ) * nr * (part.negate?-1:1);
+                } else {
+                    result += nr * (part.negate ? -1 : 1);
+                }
+            }
+            
+            return result;
+        }
+    }
+    return NAN;
 }
 Node* Node::clone() {
 	Node* result = new Node();
 	result->atts = this->atts;
 
-	vector<Node*>::iterator p;
-	for(p = subs.begin(); p != subs.end(); p++) {
-		result->subs.push_back( *p );
-	}
+    for(Node* sub : subs) {
+        result->add( sub->clone() );
+    }
 	return result;
+}
+
+void Node::add(Node* child) {
+    child->parent = this;
+    if(subs.size()) {
+        child->prev = subs.back();
+        child->prev->next = child;
+    }
+    subs.push_back(child);
 }
 
 void Node::renderJSON(std::ostream& to) {
@@ -210,7 +281,19 @@ Node* Node::getNode(string name) {
 	if(name == "prev") { return prev; }
 	if(name == "next") { return next; }
 	if(name == "last") { return subs.back(); }
+    if(name == "sib") {
+        if(prev) { return prev; }
+        if(next) { return next; }
+        return parent;
+    }
 	return this;
+}
+
+void Node::clear() {
+    for(Node* sub : subs) {
+        sub->parent = sub->prev = sub->next = NULL;
+    }
+    subs.clear();
 }
 
 kiwi::Variable Node::getVar(std::string key) {

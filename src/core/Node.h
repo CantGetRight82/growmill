@@ -26,8 +26,9 @@ class Node : VarProvider {
 		std::map<std::string, kiwi::Variable> vars;
 
 		void renderJSON(std::ostream& to);
-		int atti(std::string key);
-		float attf(std::string key);
+//		int atti(std::string key);
+        double number(std::string key);
+        double nodeNumber(std::string val);
 		Color color(std::string key);
     
         std::string str(std::string key) {
@@ -40,6 +41,9 @@ class Node : VarProvider {
 			initVars();
 		}
 
+        void add(Node* child);
+        void clear();
+    
 		void initVars();
 		std::string ids();
 		int idx(Node* child);
@@ -59,4 +63,7 @@ class Node : VarProvider {
         void fillBlanks(kiwi::Solver* solver, AbstractTextSizer& textSizer);
 		void addStay(kiwi::Solver* solver, std::string key, float val);
 		Node* clone();
+    
+        std::string getOut(std::string key, std::string val, bool side);
+        bool addOutZero(kiwi::Solver* solver, std::string key);
 };

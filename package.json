@@ -8,8 +8,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "examples": "node script/generate-examples.js"
+    "test": "node script/generate-examples.js"
   },
   "keywords": [],
   "author": "",
