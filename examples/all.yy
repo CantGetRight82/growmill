@@ -33,7 +33,7 @@ stroke: gray;
 < {
 clear;
 	{
-	fill: green;
+	fill: red;
 	trbl: out 5;
 	height: sib.height;
 	}
@@ -69,9 +69,17 @@ clear;
 }
 < {
 clear;
-text:
-hello
-world;
+fill: #333;
+	{
+	text:
+you
+why;
+	fill: black;
+	color: white;
+	id: ff;
+	l: p.left + p.width/2 - width/2;
+	t: p.top + p.height/2 - height/2;
+	}
 }
 
 

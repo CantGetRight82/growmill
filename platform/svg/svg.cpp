@@ -62,6 +62,7 @@ int main(int c, const char** argv) {
 		return 1;
 	}
 
+    
 	const char* infile = argv[1];
 	const char* outfile = argv[2];
 	int width = stoi(argv[3]);
@@ -72,14 +73,15 @@ int main(int c, const char** argv) {
     svg << "<?xml version='1.0' encoding='UTF-8'?>" <<endl;
 	svg << "<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'"
         << " width='" << width << "px' height='" << height << "px' viewBox='0 0 "<<width<<" "<<height<<"' version='1.1'>" <<endl;
-    
+ 
     SVGText text;
 	VirtualDisk disk;
+    
 	Node* root = GrowMill::parse(disk, text, infile, width, height);
 
 	render(root, text);
-    
 	svg << "</svg>" <<endl;
 	svg.close();
+
 }
 

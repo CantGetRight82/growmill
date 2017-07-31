@@ -3,17 +3,19 @@
 
 using std::vector;
 using std::string;
+using std::cerr;
+using std::endl;
 
 
 vector<yy_glyph_info> SVGText::glyphs(Node* node, float maxw, float* outw, float* outh) {
     vector<yy_glyph_info> result;
 
+
     double fontSize = 10;
     double fontFactor = fontSize/2048.0;
-    assert( FT_Set_Pixel_Sizes( ftface, 0, fontSize ) == 0);
-    
- 
-    
+    if(FT_Set_Pixel_Sizes( ftface, 0, fontSize ) != 0) {
+        cerr<<"could not set pixelsize"<<endl;
+    }
     
     double ascender = ftface->ascender * fontFactor;
     double descender = ftface->descender * fontFactor;
@@ -24,6 +26,8 @@ vector<yy_glyph_info> SVGText::glyphs(Node* node, float maxw, float* outw, float
     double lastx = 0;
     double lasty = ascender;
     double bigx = 0;
+    
+    
     for(string str : lines) {
         lastx = 0;
         size_t len = str.size();
@@ -31,8 +35,10 @@ vector<yy_glyph_info> SVGText::glyphs(Node* node, float maxw, float* outw, float
         for(int i=0; i<len; i++) {
             yy_glyph_info glyph;
             glyph.index = FT_Get_Char_Index(ftface, str.at(i));
-            int err = FT_Load_Glyph( ftface, glyph.index, 0 );
-            assert( err == 0);
+            if(FT_Load_Glyph( ftface, glyph.index, 0 ) != 0) {
+                std::cerr<<"Error loading glyph"<<std::endl;
+            }
+            
             
 
             if(FT_HAS_KERNING(ftface) && lastx>0) {
@@ -52,7 +58,7 @@ vector<yy_glyph_info> SVGText::glyphs(Node* node, float maxw, float* outw, float
             
             
             lastx += ftface->glyph->advance.x >> 6;
-                                  result.push_back( glyph );
+            result.push_back( glyph );
             
             if(maxw>0 && lastx > maxw) {
                 //TODO: if str.at(i) == space
@@ -71,15 +77,15 @@ vector<yy_glyph_info> SVGText::glyphs(Node* node, float maxw, float* outw, float
         bigx = fmaxf(bigx, lastx);
         lasty += height;
     }
+     
     if(outw != NULL) {
-        if(maxw != -1) {
-            *outw = maxw;
-        } else {
-            *outw = bigx;
-        }
+        *outw = maxw != -1 ? maxw : bigx;
     }
+    
     if(outh != NULL) {
         *outh = lasty - height - descender;
     }
+     
+    
     return result;
 }

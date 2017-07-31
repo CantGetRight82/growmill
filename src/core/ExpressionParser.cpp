@@ -37,7 +37,7 @@ void ExpressionParser::parse(string lhs, string rhs, Solver& solver, VarProvider
 		}
 
 		Constraint c = Constraint( Expression(terms,constant), op, strength);
-		debug::dump(c);
+//		debug::dump(c);
 		solver.addConstraint(c);
 	}
 }

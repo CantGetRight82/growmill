@@ -45,11 +45,6 @@ class ConstraintParser {
 						break;
 				}
 			}
-			for(Token tok : seq) {
-				cout<<tok.c<<":"<<tok.info<<endl;
-			}
-
-
 			double constant = 0;
 
 			kiwi::Expression exp(constant);

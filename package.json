@@ -8,7 +8,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "Debug/yy example/all.yy output/all.svg"
+    "test": "Debug/yy examples/all.yy output/all.svg 360 640"
   },
   "keywords": [],
   "author": "",

@@ -22,7 +22,9 @@ class SVGText : public AbstractTextSizer {
     
     void setContext(Node* node) {
         
-        assert( FT_New_Face( library, "/Library/Fonts/Arial.ttf", 0, &ftface ) == 0);
+        if( FT_New_Face( library, "/Library/Fonts/Arial.ttf", 0, &ftface ) != 0) {
+            std::cerr<<"load issue";
+        }
 
     }
     
@@ -30,7 +32,9 @@ class SVGText : public AbstractTextSizer {
     
 
     SVGText() {
-        assert( FT_Init_FreeType( &library ) == 0);
+        if( FT_Init_FreeType( &library ) != 0) {
+            std::cerr<<"lib issue";
+        }
     }
 
     ~SVGText() {
@@ -89,7 +93,13 @@ class SVGText : public AbstractTextSizer {
         funcs.shift = 0;
         funcs.delta = 0;
         
-        os << std::setprecision(8);
+ 
+        os << "<g stroke='none'";
+        if(node->has("color")) {
+            os << " fill='" << node->color("color").str() <<"'";
+        }
+        os << " transform='translate(" << rect.x << "," <<rect.y << ")'";
+        os << ">";
         for(yy_glyph_info cg : glyphs) {
             int err = FT_Load_Glyph( ftface, cg.index, FT_LOAD_NO_SCALE );
             assert( err == 0);
@@ -97,11 +107,11 @@ class SVGText : public AbstractTextSizer {
             double fontSize = 10;
             double fontFactor = fontSize/2048.0;
 
-            double x = rect.x + cg.x;
-            double y = rect.y + cg.y;
+            double x = cg.x;
+            double y = cg.y;
             
             double scale = fontFactor;
-            os << "<path transform='translate("<<x<<","<<y<<") scale("<<scale<<",-"<<scale<<")' fill='black' stroke='none' d='";
+            os << "<path transform='translate("<<x<<","<<y<<") scale("<<scale<<",-"<<scale<<")' d='";
             FT_Outline_Decompose( &ftface->glyph->outline, &funcs, (void*)&os);
 
             os << "' />" << std::endl;
@@ -109,5 +119,6 @@ class SVGText : public AbstractTextSizer {
             
 
         }
+        os << "</g>" << std::endl;
     }
 };

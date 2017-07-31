@@ -17,16 +17,13 @@ class GrowMill {
 			root->atts["left"] = "0";
 			root->atts["top"] = "0";
 
+            
 			if(outerWidth>0) {
 				root->atts["width"] = std::to_string(outerWidth);
 				root->atts["height"] = std::to_string(outerHeight);
-			} else {
-				/* root->atts["right"] = "last.right + 0"; */
-				/* root->atts["bottom"] = "last.bottom + 0"; */
 			}
 
-			/* root->renderJSON(std::cout); */
-
+            
 			try {
 				kiwi::Solver* solver = new kiwi::Solver();
 				root->constrain( solver );

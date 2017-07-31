@@ -105,10 +105,14 @@ void Node::fillBlanks(Solver* solver, AbstractTextSizer& textSizer) {
         if(varkey == "top" || varkey == "height" || varkey == "bottom") { ycount++; }
     }
     
+    if(xcount == 0) { addOutZero(solver, "left"); xcount++; }
+    if(ycount == 0) { addOutZero(solver, "top"); ycount++; }
+    
     if(has("text")) {
-        bool needsWidth = xcount<2;
-        bool needsHeight = ycount<2;
+        bool needsWidth = vars["width"].value() == 0;
+        bool needsHeight = vars["height"].value() == 0;
         if(needsWidth || needsHeight) {
+            
             float maxw = needsWidth ? -1 : right()-left();
         
             float outw, outh;
@@ -123,20 +127,13 @@ void Node::fillBlanks(Solver* solver, AbstractTextSizer& textSizer) {
             }
         }
     } else {
-        while(xcount<2) {
-            if(!addOutZero(solver,"left")) {
-                addOutZero(solver,"right");
-            }
-            xcount++;
+        if(xcount==1) {
+            addOutZero(solver,"left") || addOutZero(solver,"right");
         }
-        while(ycount<2) {
-            if(!addOutZero(solver,"top")) {
-                addOutZero(solver,"bottom");
-            }
-            ycount++;
+        if(ycount==1) {
+            addOutZero(solver,"top") || addOutZero(solver,"bottom");
         }
     }
-
     
     for( Node* n : subs) {
         n->fillBlanks(solver, textSizer);
