@@ -10,6 +10,7 @@
 #include <ftoutln.h>
 
 #include <fstream>
+#include <iomanip>
 
 class CairoText : public AbstractTextSizer {
 	private:
@@ -68,25 +69,30 @@ class CairoText : public AbstractTextSizer {
     static int moveto( const FT_Vector*  to, void* user ) {
         using std::ofstream;
         ofstream& os = *(static_cast<ofstream*>(user));
-        os << "M" << ( (to->x<<0) - 0) << "," << (to->y) << std::endl;
+        os << "M" << (to->x) << "," << (to->y)  << " ";
         return 0;
     }
     static int lineto( const FT_Vector*  to, void* user ) {
         using std::ofstream;
         ofstream& os = *(static_cast<ofstream*>(user));
-        os << "L" << ( (to->x<<0) - 0) << "," << (to->y) << std::endl;
+        os << "L" << (to->x) << "," << (to->y)  << " ";
         return 0;
     }
-    static int quadto( const FT_Vector* control, const FT_Vector* to, void* user ) {
+    static int quadto( const FT_Vector* c1, const FT_Vector* to, void* user ) {
         using std::ofstream;
         ofstream& os = *(static_cast<ofstream*>(user));
-//        os << (to->x) << "," << (to->y) << std::endl;
+        os << "Q" <<
+            (c1->x) << "," << (c1->y) << " " <<
+            (to->x) << "," << (to->y) << " ";
         return 0;
     }
-    static int cubeto( const FT_Vector* control1, const FT_Vector* control2, const FT_Vector* to, void* user ) {
+    static int cubeto( const FT_Vector* c1, const FT_Vector* c2, const FT_Vector* to, void* user ) {
         using std::ofstream;
         ofstream& os = *(static_cast<ofstream*>(user));
-//        os << (to->x) << "," << (to->y) << std::endl;
+        os << "C" <<
+            (c1->x) << "," << (c1->y) << " " <<
+            (c2->x) << "," << (c2->y) << " " <<
+            (to->x) << "," << (to->y) << " ";
         return 0;
     }
     void renderCore(Node* node, std::ofstream& os) {
@@ -102,13 +108,24 @@ class CairoText : public AbstractTextSizer {
         funcs.cubic_to = CairoText::cubeto;
         funcs.shift = 0;
         funcs.delta = 0;
+        
+        os << std::setprecision(8);
         for(cairo_glyph_t cg : glyphs) {
-            int err = FT_Load_Glyph( ftface, cg.index, 0 );
+            int err = FT_Load_Glyph( ftface, cg.index, FT_LOAD_NO_SCALE );
             assert( err == 0);
             
+            double fontSize = 10;
+            double fontFactor = fontSize/2048.0;
+
+            double x = rect.x + cg.x;
+            double y = rect.y + cg.y;
             
+            double scale = fontFactor;
+            os << "<path transform='translate("<<x<<","<<y<<") scale("<<scale<<",-"<<scale<<")' fill='black' stroke='none' d='";
             FT_Outline_Decompose( &ftface->glyph->outline, &funcs, (void*)&os);
 
+            os << "' />" << std::endl;
+//            break;
             
 
         }
