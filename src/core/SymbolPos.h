@@ -7,8 +7,6 @@ class SymbolPos {
 		size_t size = str.size();
 
 		std::vector<SymbolPos> result;
-		bool inString = false;
-		int level = 0;
 		for(int i=0; i<size; i++) {
 			if(strchr(delimeters, buffer[i]) != NULL) {
 				char c = buffer[i];

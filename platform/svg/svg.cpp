@@ -62,9 +62,6 @@ int main(int c, const char** argv) {
 		return 1;
 	}
 
-    
-
-    
 	const char* infile = argv[1];
 	const char* outfile = argv[2];
 	int width = stoi(argv[3]);
