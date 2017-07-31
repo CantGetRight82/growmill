@@ -9,3 +9,7 @@ growmill.build/
 growmill.xcodeproj/
 output/
 node_modules
+
+.DS_Store
+*.swp
+Release/
