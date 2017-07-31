@@ -1,8 +1,0 @@
-{
-top: p.top + 10;
-left: p.left+10;
-right: p.right-10;
-height: 20;
-fill: red;
-}
-

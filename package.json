@@ -8,7 +8,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "node script/generate-examples.js"
+    "test": "Debug/yy example/all.yy output/all.svg"
   },
   "keywords": [],
   "author": "",
