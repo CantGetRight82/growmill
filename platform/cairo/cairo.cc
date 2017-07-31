@@ -35,7 +35,7 @@ void rectPath(cairo_t* cr, Node* node, bool stroke, double x, double y, double w
     }
 }
 
-void renderCore(cairo_t* cr, Node* node, CairoText& text) {
+void renderCore(cairo_t* cr, Node* node, SVGText& text) {
     Rect rect = node->rect();
     
     svg << "<g>" << endl;
