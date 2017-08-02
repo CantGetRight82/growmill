@@ -1,6 +1,8 @@
 #include "parse.h"
 #include "SymbolPos.h"
 
+#include "StringTools.h"
+
 #include "../../vendor/kiwi/kiwi/kiwi.h"
 #include "../../vendor/kiwi/kiwi/debug.h"
 
@@ -11,7 +13,7 @@ string trimBefore( const char* buffer, std::vector<SymbolPos>& positions, int i)
 	int end = positions[i].pos-1;
 	int start = i>0 ? positions[i-1].pos+1 : 0;
 	while( start < end && isspace(buffer[start]) ) { start++; }
-	while( end > start && isspace(buffer[end]) ) { end--; }
+	while( end >= start && isspace(buffer[end]) ) { end--; }
 	if(end>=start) {
 		size_t size = end-start+1;
 		return string( buffer+start, size);
@@ -94,15 +96,33 @@ Node* NodeParser::parse(AbstractVirtualDisk& disk, string infile) {
 		if(symbol == '{') {
 			Node* node;
 			Node* clone = NULL;
-			if(str.find('<') != string::npos) {
-				clone = top->subs.back();
-			}
+            
+            string tag("");
+            
+            if(str.size()) {
+                vector<string> parts = StringTools::split(str," ");
+                for(string part : parts) {
+                    if(part[0] == '<') {
+                        if(part.size() == 1) {
+                            clone = top->subs.back();
+                        } else {
+                            //find node named (1:n)
+                        }
+                    } else if(part[0] == '#') {
+                        //node will be named (1:n)
+                    } else {
+                        //node has tag
+                        tag = part;
+                    }
+                }
+            }
 
 			if(clone) {
 				node = clone->clone();
 			} else {
 				node = new Node();
 			}
+            node->tag = tag;
 
 			if(top) {
                 top->add( node );
@@ -118,7 +138,7 @@ Node* NodeParser::parse(AbstractVirtualDisk& disk, string infile) {
 			if(key.size() && str.size()) {
 				if(trbl(top, key, str)) {
 				} else if(key.compare("size") == 0) {
-					vector<string> parts = top->split(str," ");
+                    vector<string> parts = StringTools::split(str," ");
 					if(parts.size() == 2) {
 						top->atts[ "width" ] = parts[0];
 						top->atts[ "height" ] = parts[1];

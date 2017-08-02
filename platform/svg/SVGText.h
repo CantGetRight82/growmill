@@ -5,10 +5,12 @@
 #include <vector>
 #include "../src/core/Node.h"
 #include "../src/core/AbstractTextSizer.h"
-#include <ftoutln.h>
+#include <freetype/ftoutln.h>
 
-#include <fstream>
+#include <sstream>
+using std::stringstream;
 #include <iomanip>
+
 
 typedef struct {
     int index;
@@ -51,35 +53,31 @@ class SVGText : public AbstractTextSizer {
 
     
     static int moveto( const FT_Vector*  to, void* user ) {
-        using std::ofstream;
-        ofstream& os = *(static_cast<ofstream*>(user));
-        os << "M" << (to->x) << "," << (to->y)  << " ";
+        stringstream& body = *(static_cast<stringstream*>(user));
+        body << "M" << (to->x) << "," << (to->y)  << " ";
         return 0;
     }
     static int lineto( const FT_Vector*  to, void* user ) {
-        using std::ofstream;
-        ofstream& os = *(static_cast<ofstream*>(user));
-        os << "L" << (to->x) << "," << (to->y)  << " ";
+        stringstream& body = *(static_cast<stringstream*>(user));
+        body << "L" << (to->x) << "," << (to->y)  << " ";
         return 0;
     }
     static int quadto( const FT_Vector* c1, const FT_Vector* to, void* user ) {
-        using std::ofstream;
-        ofstream& os = *(static_cast<ofstream*>(user));
-        os << "Q" <<
+        stringstream& body = *(static_cast<stringstream*>(user));
+        body << "Q" <<
             (c1->x) << "," << (c1->y) << " " <<
             (to->x) << "," << (to->y) << " ";
         return 0;
     }
     static int cubeto( const FT_Vector* c1, const FT_Vector* c2, const FT_Vector* to, void* user ) {
-        using std::ofstream;
-        ofstream& os = *(static_cast<ofstream*>(user));
-        os << "C" <<
+        stringstream& body = *(static_cast<stringstream*>(user));
+        body << "C" <<
             (c1->x) << "," << (c1->y) << " " <<
             (c2->x) << "," << (c2->y) << " " <<
             (to->x) << "," << (to->y) << " ";
         return 0;
     }
-    void render(Node* node, std::ofstream& os) {
+    void render(Node* node, std::stringstream& head, std::stringstream& body) {
         Rect rect = node->rect();
         
         setContext(node);
@@ -94,12 +92,12 @@ class SVGText : public AbstractTextSizer {
         funcs.delta = 0;
         
  
-        os << "<g stroke='none'";
+        body << "<g stroke='none'";
         if(node->has("color")) {
-            os << " fill='" << node->color("color").str() <<"'";
+            body << " fill='" << node->color("color").str() <<"'";
         }
-        os << " transform='translate(" << rect.x << "," <<rect.y << ")'";
-        os << ">";
+        body << " transform='translate(" << rect.x << "," <<rect.y << ")'";
+        body << ">";
         for(yy_glyph_info cg : glyphs) {
             int err = FT_Load_Glyph( ftface, cg.index, FT_LOAD_NO_SCALE );
             assert( err == 0);
@@ -111,14 +109,14 @@ class SVGText : public AbstractTextSizer {
             double y = cg.y;
             
             double scale = fontFactor;
-            os << "<path transform='translate("<<x<<","<<y<<") scale("<<scale<<",-"<<scale<<")' d='";
-            FT_Outline_Decompose( &ftface->glyph->outline, &funcs, (void*)&os);
+            body << "<path transform='translate("<<x<<","<<y<<") scale("<<scale<<",-"<<scale<<")' d='";
+            FT_Outline_Decompose( &ftface->glyph->outline, &funcs, (void*)&body);
 
-            os << "' />" << std::endl;
+            body << "' />" << std::endl;
 //            break;
             
 
         }
-        os << "</g>" << std::endl;
+        body << "</g>" << std::endl;
     }
 };

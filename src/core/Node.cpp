@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include "ExpressionParser.h"
+#include "StringTools.h"
 
 using namespace kiwi;
 using std::string;
@@ -42,7 +43,7 @@ void Node::constrain(Solver* solver) {
 		if(atts.count(key)) {
 			string val = atts[key];
 			if(val.find("out") != std::string::npos) {
-				vector<string> parts = split(val," ");
+                vector<string> parts = StringTools::split(val," ");
 				assert(parts.size() == 2);
                 
                 val = getOut( key, parts[1], side);
@@ -92,7 +93,8 @@ std::string Node::getOut(std::string key, std::string val, bool side) {
 
 bool Node::addOutZero(kiwi::Solver* solver, std::string key) {
     if(std::find(usedVars.begin(), usedVars.end(), key) == usedVars.end()) {
-        ExpressionParser::parse( key, getOut(key, "0", false), *solver, *this);
+//        ExpressionParser::parse( key, getOut(key, "0", false), *solver, *this);
+        ExpressionParser::parse( key, string("p."+key), *solver, *this);
         return true;
     }
     return false;
@@ -153,7 +155,7 @@ Color Node::color(string key) {
 }
 
 double Node::nodeNumber(string val) {
-    vector<string> parts = split(val,".");
+    vector<string> parts = StringTools::split(val,".");
     Node* node = parts.size() > 1 ? getNode(parts[0]) : this;
     string key = parts.back();
     if(node->atts.count(key)) {
@@ -205,6 +207,7 @@ Node* Node::clone() {
     }
 	return result;
 }
+
 
 void Node::add(Node* child) {
     child->parent = this;
@@ -259,10 +262,6 @@ int Node::idx(Node* child) {
 	return -1;
 }
 
-vector<string> Node::attsplit(string key, string delims) {
-	return split( atts[key], delims);
-}
-
 Rect Node::rect() {
 	float top = vars["top"].value();
 	float left = vars["left"].value();
@@ -294,7 +293,7 @@ void Node::clear() {
 }
 
 kiwi::Variable Node::getVar(std::string key) {
-	vector<string> parts = split(key,".");
+	vector<string> parts = StringTools::split(key,".");
     Node* node;
     string varkey;
 	if(parts.size() == 1) {
@@ -308,15 +307,4 @@ kiwi::Variable Node::getVar(std::string key) {
 	return node->vars[ varkey ];
 
 }
-vector<string> Node::split(string val, string delims) {
-	vector<string> result;
-	size_t current;
-	size_t next = -1;
-	do {
-		current = next + 1;
-		next = val.find_first_of( delims, current );
-		result.push_back( val.substr( current, next - current ) );
-	}
-	while (next != string::npos);
-	return result;
-}
+

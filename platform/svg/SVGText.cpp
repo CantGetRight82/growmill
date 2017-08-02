@@ -1,5 +1,6 @@
 
 #include "SVGText.h"
+#include "core/StringTools.h"
 
 using std::vector;
 using std::string;
@@ -21,7 +22,7 @@ vector<yy_glyph_info> SVGText::glyphs(Node* node, float maxw, float* outw, float
     double descender = ftface->descender * fontFactor;
     double height = ftface->height * fontFactor;
     
-    vector<string> lines = node->attsplit("text", "\n");
+    vector<string> lines = StringTools::split(node->str("text"), "\n");
 
     double lastx = 0;
     double lasty = ascender;

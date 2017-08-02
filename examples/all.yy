@@ -69,17 +69,22 @@ clear;
 }
 < {
 clear;
-fill: #333;
+fill: (0,0) (0,100) red black;
+fill: black;
+color: white;
 	{
+	fill: white;
+	color: black;
 	text:
 you
 why;
-	fill: black;
-	color: white;
 	id: ff;
 	l: p.left + p.width/2 - width/2;
 	t: p.top + p.height/2 - height/2;
 	}
 }
 
-
+< {
+clear;
+fill: (0,0) (0,100) red black;
+}
