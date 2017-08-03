@@ -48,6 +48,36 @@ void renderRectOpen(Node* node, stringstream& body) {
 }
 
 void render(Node* node, SVGText& text, stringstream& head, stringstream& body) {
+    if(node->has("shadow")) {
+        std::vector<std::string> parts = StringTools::split(node->str("shadow"), " ");
+        GradientPoint offset = parseGradientPoint(parts[0]);
+        
+        double blur = strtod(parts[1].c_str(), NULL);
+        Color color = Color::fromString(parts[2]);
+        
+
+        double minx = fmin( -blur, -blur + offset.x);
+        double miny = fmin( -blur, -blur + offset.y);
+        
+        Rect rect = node->rect();
+        double maxx = fmax( blur, blur + offset.x) + rect.width;
+        double maxy = fmax( blur, blur + offset.y) + rect.height;
+        
+		head << "<filter id='shadow'"
+            " x='"<<minx<<"' width='"<<maxx<<"'"
+            " y='"<<miny<<"' height='"<<maxy<<"'>"
+			
+        "<feOffset in='SourceAlpha' result='offOut' dx='"<<offset.x<<"' dy='"<<offset.y<<"' />"
+        "<feColorMatrix in='offOut' result='colorOut' type='matrix' values='"
+        " 0 0 0 0 "<<color.r<<
+        " 0 0 0 0 "<<color.g<<
+        " 0 0 0 0 "<<color.b<<
+        " 0 0 0 1 0' />"
+        "<feGaussianBlur in='colorOut' result='blurOut' stdDeviation='"<<blur<<"' />"
+        "<feBlend in='SourceGraphic' in2='blurOut' mode='normal' />"
+			"</filter>" << endl;
+        
+    }
 
     body << "<g>" << endl;
     if(node->has("fill") || node->has("stroke")) {
@@ -56,6 +86,10 @@ void render(Node* node, SVGText& text, stringstream& head, stringstream& body) {
         if(node->has("stroke")) {
             body << " stroke: "<<node->color("stroke").str()<<";";
         }
+
+		if(node->has("shadow")) {
+			body << " filter: url(#shadow);";
+		}
       
         if(node->has("fill")) {
             std::string fill = node->str("fill");
@@ -95,6 +129,7 @@ void render(Node* node, SVGText& text, stringstream& head, stringstream& body) {
         text.render(node, head,  body);
         
     }
+    
     
     body << "</g>" << endl;
     

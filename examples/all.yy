@@ -86,5 +86,12 @@ why;
 
 < {
 clear;
+fill: white;
+shadow: (0,0) 5 #000;
+}
+
+< {
+clear;
+shadow;
 fill: (0,0) (0,100) red black;
 }
