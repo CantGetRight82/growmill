@@ -29,9 +29,6 @@ using std::endl;
 using std::stringstream;
 
 
-std::ofstream svg;
-
-
 
 void renderRectOpen(Node* node, stringstream& body) {
     Rect rect = node->rect();
@@ -153,6 +150,12 @@ int main(int c, const char** argv) {
 	int height = stoi(argv[4]);
     
 	using std::endl;
+    
+    std::ofstream debug;
+    debug.open("/tmp/debug.json");
+    
+    std::ofstream svg;
+    
 	svg.open(outfile);
     svg << "<?xml version='1.0' encoding='UTF-8'?>" <<endl;
 	svg << "<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'"
@@ -165,8 +168,9 @@ int main(int c, const char** argv) {
     stringstream head;
     stringstream body;
     
-	Node* root = GrowMill::parse(disk, text, infile, width, height);
-
+    Node* root = GrowMill::parse(disk, text, infile, width, height);
+    root->renderJSON(debug);
+    
 	render(root, text, head, body);
     
     svg << "<defs>" << head.str() << "</defs>";

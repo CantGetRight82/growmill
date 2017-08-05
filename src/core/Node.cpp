@@ -111,8 +111,8 @@ void Node::fillBlanks(Solver* solver, AbstractTextSizer& textSizer) {
     if(ycount == 0) { addOutZero(solver, "top"); ycount++; }
     
     if(has("text")) {
-        bool needsWidth = vars["width"].value() == 0;
-        bool needsHeight = vars["height"].value() == 0;
+        bool needsWidth = vars["width"].value() <= 0;
+        bool needsHeight = vars["height"].value() <= 0;
         if(needsWidth || needsHeight) {
             
             float maxw = needsWidth ? -1 : right()-left();

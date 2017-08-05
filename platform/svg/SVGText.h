@@ -22,7 +22,13 @@ class SVGText : public AbstractTextSizer {
 		FT_Library library;
         FT_Face ftface;
     
-    void setContext(Node* node) {
+        double fontSize;
+        double fontFactor;
+    
+    
+    void setContext(Node* node) {        
+        fontSize = node->has("font-size") ? node->number("font-size") : 10;
+        fontFactor = fontSize/2048.0;
         
         if( FT_New_Face( library, "/Library/Fonts/Arial.ttf", 0, &ftface ) != 0) {
             std::cerr<<"load issue";
@@ -81,6 +87,9 @@ class SVGText : public AbstractTextSizer {
         Rect rect = node->rect();
         
         setContext(node);
+   
+
+        
         std::vector<yy_glyph_info> glyphs = this->glyphs( node, rect.width, NULL, NULL );
 
         FT_Outline_Funcs funcs;
@@ -102,9 +111,7 @@ class SVGText : public AbstractTextSizer {
             int err = FT_Load_Glyph( ftface, cg.index, FT_LOAD_NO_SCALE );
             assert( err == 0);
             
-            double fontSize = 10;
-            double fontFactor = fontSize/2048.0;
-
+    
             double x = cg.x;
             double y = cg.y;
             

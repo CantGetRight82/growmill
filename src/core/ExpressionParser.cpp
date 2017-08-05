@@ -23,6 +23,7 @@ void ExpressionParser::parse(string lhs, string rhs, Solver& solver, VarProvider
 		vector<Term> terms;
 		terms.push_back( Term(from, -1) );
 		for(int i=0; i<parts.size(); i++) {
+            printf("%c\n", parts[i].var[0]);
 			if(parts[i].var.size()) {
 				switch(parts[i].var[0]) {
 					case '<': op = OP_LE; break;
@@ -37,7 +38,7 @@ void ExpressionParser::parse(string lhs, string rhs, Solver& solver, VarProvider
 		}
 
 		Constraint c = Constraint( Expression(terms,constant), op, strength);
-//		debug::dump(c);
+		debug::dump(c);
 		solver.addConstraint(c);
 	}
 }

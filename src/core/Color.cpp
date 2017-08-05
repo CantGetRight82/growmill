@@ -13,11 +13,9 @@ float Color::normal(unsigned char big, unsigned char small) {
 }
     
 unsigned char Color::parseChar(unsigned char c) {
-	unsigned char result = c-48;
-	if(result > 9){
-		result -= 39;
-	}
-	return result;
+    if(c < 58) { return c-48; }
+    if(c < 97) { return c-55; }
+    return c - 87;
 }
 
 Color Color::fromString(std::string str) {

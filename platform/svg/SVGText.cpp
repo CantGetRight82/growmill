@@ -12,8 +12,6 @@ vector<yy_glyph_info> SVGText::glyphs(Node* node, float maxw, float* outw, float
     vector<yy_glyph_info> result;
 
 
-    double fontSize = 10;
-    double fontFactor = fontSize/2048.0;
     if(FT_Set_Pixel_Sizes( ftface, 0, fontSize ) != 0) {
         cerr<<"could not set pixelsize"<<endl;
     }
