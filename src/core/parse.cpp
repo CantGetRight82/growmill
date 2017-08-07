@@ -94,10 +94,11 @@ Node* NodeParser::parse(AbstractVirtualDisk& disk, string infile) {
 
 		string str = trimBefore(buffer, positions, i);
 		if(symbol == '{') {
-			Node* node;
+            Node* node = NULL;
 			Node* clone = NULL;
             
             string tag("");
+            string name("");
             
             if(str.size()) {
                 vector<string> parts = StringTools::split(str," ");
@@ -106,28 +107,34 @@ Node* NodeParser::parse(AbstractVirtualDisk& disk, string infile) {
                         if(part.size() == 1) {
                             clone = top->subs.back();
                         } else {
-                            //find node named (1:n)
+                            throw "should be recursive from root";
+                            clone = top->find( part.substr(1) );
                         }
                     } else if(part[0] == '#') {
-                        //node will be named (1:n)
+                        name = part.substr(1);
+                        node = top->find(name);
+                        
                     } else {
-                        //node has tag
                         tag = part;
                     }
                 }
             }
 
-			if(clone) {
-				node = clone->clone();
-			} else {
-				node = new Node();
-			}
-            node->tag = tag;
+            if(!node) {
+                if(clone) {
+                    node = clone->clone();
+                } else {
+                    node = new Node();
+                }
+                node->tag = tag;
+                node->name = name;
 
-			if(top) {
-                top->add( node );
-			}
-			stack.push_back( node );
+                if(top) {
+                    top->add( node );
+                }
+               
+            }
+            stack.push_back( node );
 			top = node;
 		} else if(symbol == '}') {
 			stack.pop_back();

@@ -30,8 +30,13 @@ class SVGText : public AbstractTextSizer {
         fontSize = node->has("font-size") ? node->number("font-size") : 10;
         fontFactor = fontSize/2048.0;
         
-        if( FT_New_Face( library, "/Library/Fonts/Arial.ttf", 0, &ftface ) != 0) {
-            std::cerr<<"load issue";
+        std::string faceLocation = "/Library/Fonts/Arial.ttf";
+        if(node->has("font-family")) {
+            faceLocation = "yy/font/" + node->str("font-family") + ".ttf";
+        }
+        
+        if( FT_New_Face( library, faceLocation.c_str(), 0, &ftface ) != 0) {
+            throw "load issue";
         }
 
     }
@@ -120,8 +125,6 @@ class SVGText : public AbstractTextSizer {
             FT_Outline_Decompose( &ftface->glyph->outline, &funcs, (void*)&body);
 
             body << "' />" << std::endl;
-//            break;
-            
 
         }
         body << "</g>" << std::endl;

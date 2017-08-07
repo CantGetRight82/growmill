@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <set>
 #include <math.h>
 #include <assert.h>
 
@@ -19,12 +20,13 @@ class Node : VarProvider {
 		Node* next;
     
         std::string tag;
+        std::string name;
 
 		std::map<std::string,std::string> atts;
 		std::vector<Node*> subs;
 
 		std::map<std::string, kiwi::Variable> vars;
-        std::vector<std::string> usedVars;
+        std::set<std::string> usedVars;
     
 		void renderJSON(std::ostream& to);
         double number(std::string key);
@@ -54,14 +56,18 @@ class Node : VarProvider {
         double right();
         double bottom();
         double left();
+    
+        Node* find(std::string name);
 
-		Node* getNode(std::string name);
+		Node* getNode(std::string path);
+    
 		kiwi::Variable getVar(std::string key);
 		void constrain(kiwi::Solver* solver);
         void fillBlanks(kiwi::Solver* solver, AbstractTextSizer& textSizer);
 		void addStay(kiwi::Solver* solver, std::string key, float val);
     Node* clone();
     
-        std::string getOut(std::string key, std::string val, bool side);
+    std::string getIn(std::string key, std::string val, bool side);
+    std::string getOut(std::string key, std::string val, bool side);
         bool addOutZero(kiwi::Solver* solver, std::string key);
 };

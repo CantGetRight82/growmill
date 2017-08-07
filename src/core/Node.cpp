@@ -41,14 +41,15 @@ void Node::constrain(Solver* solver) {
 	bool side = atts["flow"] == "side";
 	for(string key : keys) {
 		if(atts.count(key)) {
-			string val = atts[key];
-			if(val.find("out") != std::string::npos) {
+			string val = " " +atts[key];
+			if(val.find(" out ") != std::string::npos) {
                 vector<string> parts = StringTools::split(val," ");
-				assert(parts.size() == 2);
-                
-                val = getOut( key, parts[1], side);
+                val = getOut( key, parts.back(), side);
+            } else if(val.find(" in ") != std::string::npos) {
+                vector<string> parts = StringTools::split(val," ");
+                val = getIn( key, parts.back(), side);
+            }
 
-			}
 			ExpressionParser::parse( key, val, *solver, *this);
 		}
 	}
@@ -57,6 +58,19 @@ void Node::constrain(Solver* solver) {
         n->constrain( solver );
     }
 
+}
+
+std::string Node::getIn(std::string key, std::string val, bool side) {
+
+    if(key == "top") {
+        return "first.top - "+val;
+    }
+    if(key == "bottom") {
+        return "last.bottom + "+val;
+    }
+    throw "missing " + key;
+
+    return "";
 }
 
 
@@ -92,9 +106,9 @@ std::string Node::getOut(std::string key, std::string val, bool side) {
 }
 
 bool Node::addOutZero(kiwi::Solver* solver, std::string key) {
-    if(std::find(usedVars.begin(), usedVars.end(), key) == usedVars.end()) {
-//        ExpressionParser::parse( key, getOut(key, "0", false), *solver, *this);
-        ExpressionParser::parse( key, string("p."+key), *solver, *this);
+    if(usedVars.find(key) == usedVars.end()) {
+        ExpressionParser::parse( key, getOut(key, "0", false), *solver, *this);
+//        ExpressionParser::parse( key, string("p."+key), *solver, *this);
         return true;
     }
     return false;
@@ -133,7 +147,9 @@ void Node::fillBlanks(Solver* solver, AbstractTextSizer& textSizer) {
             addOutZero(solver,"left") || addOutZero(solver,"right");
         }
         if(ycount==1) {
-            addOutZero(solver,"top") || addOutZero(solver,"bottom");
+            if(!addOutZero(solver,"top")) {
+                ExpressionParser::parse( "bottom", "last.bottom", *solver, *this);
+            }
         }
     }
     
@@ -201,7 +217,8 @@ double Node::number(string key) {
 Node* Node::clone() {
 	Node* result = new Node();
 	result->atts = this->atts;
-
+    result->tag = this->tag;
+    result->name = this->name;
     for(Node* sub : subs) {
         result->add( sub->clone() );
     }
@@ -272,12 +289,21 @@ Rect Node::rect() {
 }
 
 
-Node* Node::getNode(string name) {
-	if(name == "p") { return parent; }
-	if(name == "prev") { return prev; }
-	if(name == "next") { return next; }
-	if(name == "last") { return subs.back(); }
-    if(name == "sib") {
+Node* Node::find(string name) {
+    for(Node* n : subs) {
+        if(n->name == name) {  return n; }
+    }
+    return NULL;
+}
+
+Node* Node::getNode(string path) {
+    if(path == "p") { return parent; }
+    if(path == "parent") { return parent; }
+	if(path == "prev") { return prev; }
+	if(path == "next") { return next; }
+	if(path == "first") { return subs[0]; }
+    if(path == "last") { return subs.back(); }
+    if(path == "sib") {
         if(prev) { return prev; }
         if(next) { return next; }
         return parent;
@@ -303,7 +329,7 @@ kiwi::Variable Node::getVar(std::string key) {
         node = getNode(parts[0]);
         varkey = parts[1];
     }
-    node->usedVars.push_back(varkey);
+    node->usedVars.insert(varkey);
 	return node->vars[ varkey ];
 
 }

@@ -51,12 +51,11 @@ vector<yy_glyph_info> SVGText::glyphs(Node* node, float maxw, float* outw, float
                 }
             }
             
-            
             glyph.x = lastx;
             glyph.y = lasty;
             
             
-            lastx += ftface->glyph->advance.x >> 6;
+            lastx += (ftface->glyph->advance.x >> 6) * (ftface->units_per_EM/2048.0);
             result.push_back( glyph );
             
             if(maxw>0 && lastx > maxw) {

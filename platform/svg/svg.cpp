@@ -8,6 +8,7 @@
 #include <fstream>
 #include <sstream>
 #include "core/StringTools.h"
+#include <dirent.h>
 
 typedef struct {
     double x, y;
@@ -76,7 +77,8 @@ void render(Node* node, SVGText& text, stringstream& head, stringstream& body) {
         
     }
 
-    body << "<g>" << endl;
+    Rect rect = node->rect();
+    body << "<g x-trans='"<<rect.x<<" "<<rect.y<<"'>" << endl;
     if(node->has("fill") || node->has("stroke")) {
         renderRectOpen(node, body);
         body << " style='";
@@ -127,42 +129,32 @@ void render(Node* node, SVGText& text, stringstream& head, stringstream& body) {
         
     }
     
-    
-    body << "</g>" << endl;
-    
+   
 	for(Node* n : node->subs) {
         if(n->tag == "gradient") { continue; }
 		render(n, text, head, body);
 	}
+    
+    
+    body << "</g>" << endl;
+    
 }
 
-
-int main(int c, const char** argv) {
-	if(c<5) {
-        std::cerr<<"Usage: yy <in.mil> <out.svg> <target-width> <target-height>"<<std::endl;
-		return 1;
-	}
-
-    
-	const char* infile = argv[1];
-	const char* outfile = argv[2];
-	int width = stoi(argv[3]);
-	int height = stoi(argv[4]);
-    
-	using std::endl;
+void convert(const char* infile, const char* outfile, int width, int height) {
+    using std::endl;
     
     std::ofstream debug;
     debug.open("/tmp/debug.json");
     
     std::ofstream svg;
     
-	svg.open(outfile);
+    svg.open(outfile);
     svg << "<?xml version='1.0' encoding='UTF-8'?>" <<endl;
-	svg << "<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'"
-        << " width='" << width << "px' height='" << height << "px' viewBox='0 0 "<<width<<" "<<height<<"' version='1.1'>" <<endl;
- 
+    svg << "<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'"
+    << " width='" << width << "px' height='" << height << "px' viewBox='0 0 "<<width<<" "<<height<<"' version='1.1'>" <<endl;
+    
     SVGText text;
-	VirtualDisk disk;
+    VirtualDisk disk;
     
     
     stringstream head;
@@ -171,12 +163,51 @@ int main(int c, const char** argv) {
     Node* root = GrowMill::parse(disk, text, infile, width, height);
     root->renderJSON(debug);
     
-	render(root, text, head, body);
+    render(root, text, head, body);
     
     svg << "<defs>" << head.str() << "</defs>";
     svg << body.str() << endl;
-	svg << "</svg>" <<endl;
-	svg.close();
+    svg << "</svg>" <<endl;
+    svg.close();
+    
+    
+}
 
+std::string exec(const char* cmd) {
+    char buffer[128];
+    std::string result = "";
+    FILE* pipe = popen(cmd, "r");
+    if (!pipe) throw std::runtime_error("popen() failed!");
+    try {
+        while (!feof(pipe)) {
+            if (fgets(buffer, 128, pipe) != NULL)
+                result += buffer;
+        }
+    } catch (...) {
+        pclose(pipe);
+        throw;
+    }
+    pclose(pipe);
+    return result;
+}
+
+int main(int c, const char** argv) {
+	if(c == 5) {
+        convert( argv[1], argv[2], stoi(argv[3]), stoi(argv[4]) );
+    } else {
+        using std::string;
+        string url = exec("osascript /Users/rinkevandenberg/apples/chrome.location.scpt");
+        url.pop_back();
+        
+        string remove = "http://localhost:3000/yy/";
+        string file = url.substr(remove.size());
+        string infile = "yy/" + file;
+        string outfile = "/tmp/" + file.substr(0,file.size()-3) + ".svg";
+        convert(infile.c_str(), outfile.c_str(), 360, 640);
+        std::cout<<outfile<<std::endl;
+        
+    }
+
+    system("osascript /Users/rinkevandenberg/apples/chrome.reload.scpt");
 }
 
