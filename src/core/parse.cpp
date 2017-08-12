@@ -51,14 +51,14 @@ Node* NodeParser::parse(AbstractVirtualDisk& disk, string infile) {
 	string str = disk.getContents(infile);
 	size_t pos;
 	while(1) {
-		pos = str.find("#include(");
+		pos = str.find("include(");
 		if(pos == string::npos) { break; }
 
 		size_t end = str.find(";", pos);
 		assert( end != string::npos );
 
 		size_t filepos = pos + 9;
-		string file = str.substr( filepos, end-filepos-1);
+		string file = str.substr( filepos, end-filepos-2);
 
 		string include = disk.getContents( dir + file );
 		str = str.substr(0, pos) + include + str.substr(end+1);
@@ -107,8 +107,8 @@ Node* NodeParser::parse(AbstractVirtualDisk& disk, string infile) {
                         if(part.size() == 1) {
                             clone = top->subs.back();
                         } else {
-                            throw std::runtime_error("should be recursive from root");
-                            clone = top->find( part.substr(1) );
+//                            throw std::runtime_error("should be recursive from root");
+                            clone = root->find( part.substr(1) );
                         }
                     } else if(part[0] == '#') {
                         name = part.substr(1);

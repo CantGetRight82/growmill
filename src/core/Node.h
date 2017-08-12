@@ -37,7 +37,7 @@ class Node : VarProvider {
             return atts[key];
         }
 
-        bool has(std::string key);
+        Node* has(std::string key, bool parents = false);
 
 		Node() : parent(NULL), prev(NULL), next(NULL) {
 			initVars();

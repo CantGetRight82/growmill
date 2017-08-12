@@ -15,8 +15,14 @@ using std::endl;
 
 Node* Node::zero = NULL;
 
-bool Node::has(string key) {
-	return atts.count(key);
+Node* Node::has(string key, bool parents) {
+    if(atts.count(key)) {
+        return this;
+    }
+    if(parents) {
+        return parent->has(key, true);
+    }
+    return NULL;
 }
 
 void Node::initVars() {
@@ -39,7 +45,8 @@ void Node::constrain(Solver* solver) {
 		"top", "right", "bottom", "left", "width", "height"
 	};
 
-	bool side = atts["flow"] == "side";
+    printf("atts.count: %i\n", (int)atts.count("flow"));
+	bool side = atts.count("flow") && atts["flow"] == "side";
 	for(string key : keys) {
 		if(atts.count(key)) {
             printf("GO %s\n", atts[key].c_str());
@@ -321,6 +328,11 @@ Rect Node::local() {
 Node* Node::find(string name) {
     for(Node* n : subs) {
         if(n->name == name) {  return n; }
+    }
+    
+    for(Node* n : subs) {
+        Node* found = n->find(name);
+        if(found) { return found; }
     }
     return NULL;
 }

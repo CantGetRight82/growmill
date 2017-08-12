@@ -26,13 +26,14 @@ class SVGText : public AbstractTextSizer {
         double fontFactor;
     
     
-    void setContext(Node* node) {        
-        fontSize = node->has("font-size") ? node->number("font-size") : 10;
+    void setContext(Node* node) {
+        Node* has;
+        fontSize = (has = node->has("font-size",true)) ? has->number("font-size") : 10;
         fontFactor = fontSize/2048.0;
         
         std::string faceLocation = "/Library/Fonts/Arial.ttf";
-        if(node->has("font-family")) {
-            faceLocation = "yy/font/" + node->str("font-family") + ".ttf";
+        if((has = node->has("font-family", true))) {
+            faceLocation = "yy/font/" + has->str("font-family") + ".ttf";
         }
         
         if( FT_New_Face( library, faceLocation.c_str(), 0, &ftface ) != 0) {
