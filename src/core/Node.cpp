@@ -27,6 +27,7 @@ void Node::initVars() {
 }
 
 void Node::constrain(Solver* solver) {
+
 	solver->addConstraint( vars["width"] == vars["right"] - vars["left"] );
 	solver->addConstraint( vars["height"] == vars["bottom"] - vars["top"] );
 	if(!parent) {
@@ -41,16 +42,19 @@ void Node::constrain(Solver* solver) {
 	bool side = atts["flow"] == "side";
 	for(string key : keys) {
 		if(atts.count(key)) {
-			string val = " " +atts[key];
-			if(val.find(" out ") != std::string::npos) {
-                vector<string> parts = StringTools::split(val," ");
-                val = getOut( key, parts.back(), side);
-            } else if(val.find(" in ") != std::string::npos) {
-                vector<string> parts = StringTools::split(val," ");
-                val = getIn( key, parts.back(), side);
+            printf("GO %s\n", atts[key].c_str());
+            vector<string> vals = StringTools::split(atts[key],"|");
+            for(string val : vals) {
+//                printf("%s\n", val.c_str());
+                if(val.find("out") == val.find_first_not_of(' ')) {
+                    vector<string> parts = StringTools::split(val," ");
+                    val = getOut( key, parts.back(), side);
+                } else if(val.find("in") == val.find_first_not_of(' ')) {
+                    vector<string> parts = StringTools::split(val," ");
+                    val = getIn( key, parts.back(), side);
+                }
+                ExpressionParser::parse( key, val, *solver, *this);
             }
-
-			ExpressionParser::parse( key, val, *solver, *this);
 		}
 	}
 
@@ -68,7 +72,13 @@ std::string Node::getIn(std::string key, std::string val, bool side) {
     if(key == "bottom") {
         return "last.bottom + "+val;
     }
-    throw "missing " + key;
+    if(key == "left") {
+        return "first.left - "+val;
+    }
+    if(key == "right") {
+        return "last.right + "+val;
+    }
+    throw std::runtime_error("missing " + key);
 
     return "";
 }
@@ -105,28 +115,17 @@ std::string Node::getOut(std::string key, std::string val, bool side) {
     return "";
 }
 
-bool Node::addOutZero(kiwi::Solver* solver, std::string key) {
-    if(usedVars.find(key) == usedVars.end()) {
-        ExpressionParser::parse( key, getOut(key, "0", false), *solver, *this);
-//        ExpressionParser::parse( key, string("p."+key), *solver, *this);
-        return true;
-    }
-    return false;
+void Node::addOutZero(kiwi::Solver* solver, std::string key) {
+    ExpressionParser::parse( key, getOut(key, "0", false), *solver, *this);
 }
 void Node::fillBlanks(Solver* solver, AbstractTextSizer& textSizer) {
-    
-    int xcount = 0, ycount = 0;
-    for(string varkey : usedVars) {
-        if(varkey == "left" || varkey == "width" || varkey == "right") { xcount++; }
-        if(varkey == "top" || varkey == "height" || varkey == "bottom") { ycount++; }
-    }
-    
-    if(xcount == 0) { addOutZero(solver, "left"); xcount++; }
-    if(ycount == 0) { addOutZero(solver, "top"); ycount++; }
-    
+    int xcount = atts.count("left") + atts.count("width") + atts.count("right");
+    int ycount = atts.count("top") + atts.count("height") + atts.count("bottom");
+
+
     if(has("text")) {
-        bool needsWidth = vars["width"].value() <= 0;
-        bool needsHeight = vars["height"].value() <= 0;
+        bool needsWidth = xcount < 2; //vars["width"].value() <= 0;
+        bool needsHeight = ycount < 2; //vars["height"].value() <= 0;
         if(needsWidth || needsHeight) {
             
             float maxw = needsWidth ? -1 : right()-left();
@@ -136,22 +135,42 @@ void Node::fillBlanks(Solver* solver, AbstractTextSizer& textSizer) {
             
             if(needsWidth) {
                 addStay(solver, "width", outw);
+                xcount++;
             }
             
             if(needsHeight) {
                 addStay(solver, "height", outh);
-            }
-        }
-    } else {
-        if(xcount==1) {
-            addOutZero(solver,"left") || addOutZero(solver,"right");
-        }
-        if(ycount==1) {
-            if(!addOutZero(solver,"top")) {
-                ExpressionParser::parse( "bottom", "last.bottom", *solver, *this);
+                ycount++;
             }
         }
     }
+    
+    if(xcount < 2 && !atts.count("left")) { addOutZero(solver, "left"); xcount++; }
+    if(xcount < 2) { addOutZero(solver, "right"); }
+ 
+    
+    if(ycount < 2 && !atts.count("top")) { addOutZero(solver, "top"); ycount++; }
+    if(ycount < 2) {
+        if(subs.size()) {
+            ExpressionParser::parse( "bottom", "last.bottom", *solver, *this);
+        } else {
+            ExpressionParser::parse( "height", "1", *solver, *this);
+        }
+    }
+
+    /*
+    else {
+
+        if(atts.count("right") == 0 &&
+           atts.count("width") == 0) {
+            addOutZero(solver, "right");
+        }
+        if(atts.count("bottom") == 0 &&
+           atts.count("height") == 0) {
+            ExpressionParser::parse( "bottom", "last.bottom", *solver, *this);
+        }
+    }
+     */
     
     for( Node* n : subs) {
         n->fillBlanks(solver, textSizer);
@@ -286,6 +305,16 @@ Rect Node::rect() {
 	float right = vars["right"].value();
 
 	return Rect( left, top, right-left, bottom-top );
+}
+
+
+Rect Node::local() {
+    Rect result = this->rect();
+    if(parent) {
+        result.x -= parent->left();
+        result.y -= parent->top();
+    }
+    return result;
 }
 
 

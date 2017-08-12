@@ -63,7 +63,7 @@ vector<yy_glyph_info> SVGText::glyphs(Node* node, float maxw, float* outw, float
                 int j = i;
                 while(j>0 && str.at(j) != ' ') { j--; result.pop_back(); }
                 if(j==0) {
-                    throw "cannot break at space";
+                    throw std::runtime_error("cannot break at space");
                 }
                 i=j;
                 lastx = 0;

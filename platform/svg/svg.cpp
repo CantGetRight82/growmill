@@ -34,8 +34,6 @@ using std::stringstream;
 void renderRectOpen(Node* node, stringstream& body) {
     Rect rect = node->rect();
     body << "<rect" <<
-    " x='"<<rect.x<<"'" <<
-    " y='"<<rect.y<<"'" <<
     " width='"<<rect.width<<"'" <<
     " height='"<<rect.height<<"'";
     
@@ -70,15 +68,16 @@ void render(Node* node, SVGText& text, stringstream& head, stringstream& body) {
         " 0 0 0 0 "<<color.r<<
         " 0 0 0 0 "<<color.g<<
         " 0 0 0 0 "<<color.b<<
-        " 0 0 0 1 0' />"
+        " 0 0 0 "<<color.a<<" 0' />"
         "<feGaussianBlur in='colorOut' result='blurOut' stdDeviation='"<<blur<<"' />"
         "<feBlend in='SourceGraphic' in2='blurOut' mode='normal' />"
 			"</filter>" << endl;
         
     }
 
-    Rect rect = node->rect();
-    body << "<g x-trans='"<<rect.x<<" "<<rect.y<<"'>" << endl;
+    Rect rect = node->local();
+//    body << "<g x-trans='"<<rect.x<<" "<<rect.y<<"'>" << endl;
+    body << "<g transform='translate("<<rect.x<<","<<rect.y<<")'>" << endl;
     if(node->has("fill") || node->has("stroke")) {
         renderRectOpen(node, body);
         body << " style='";

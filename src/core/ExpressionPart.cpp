@@ -18,11 +18,17 @@ std::vector<ExpressionPart> ExpressionPart::parse(std::string str) {
     
     int start = 0;
     char first = str[0];
-    if(first == '<' || first == '>') {
+    if(first == '<' || first == '>')  {
         seq.push_back( ExpressionPart() );
         seq.back().var = string(first,1);
         start++;
     }
+    if(first == '!') {
+        seq.push_back( ExpressionPart() );
+        seq.back().var = "!";
+        start++;
+    }
+
     const char* delimeters = " */-+";
     
     seq.push_back( ExpressionPart() );

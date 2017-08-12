@@ -110,7 +110,6 @@ class SVGText : public AbstractTextSizer {
         if(node->has("color")) {
             body << " fill='" << node->color("color").str() <<"'";
         }
-        body << " transform='translate(" << rect.x << "," <<rect.y << ")'";
         body << ">";
         for(yy_glyph_info cg : glyphs) {
             int err = FT_Load_Glyph( ftface, cg.index, FT_LOAD_NO_SCALE );

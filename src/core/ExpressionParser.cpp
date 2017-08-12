@@ -17,17 +17,19 @@ void ExpressionParser::parse(string lhs, string rhs, Solver& solver, VarProvider
 		solver.suggestValue( from, parts[0].number() );
 	} else {
 		RelationalOperator op = OP_EQ;
-		double strength = strength::required;
+		double strength = strength::strong;
 
 		double constant = 0;
 		vector<Term> terms;
 		terms.push_back( Term(from, -1) );
 		for(int i=0; i<parts.size(); i++) {
-            printf("%c\n", parts[i].var[0]);
 			if(parts[i].var.size()) {
 				switch(parts[i].var[0]) {
 					case '<': op = OP_LE; break;
 					case '>': op = OP_GE; break;
+                    case '!':
+                        strength = strength::required;
+                        break;
 					default:
 							  terms.push_back( Term( provider.getVar(parts[i].var), parts[i].number() ) );
 							  break;
@@ -38,7 +40,7 @@ void ExpressionParser::parse(string lhs, string rhs, Solver& solver, VarProvider
 		}
 
 		Constraint c = Constraint( Expression(terms,constant), op, strength);
-		debug::dump(c);
+//		debug::dump(c);
 		solver.addConstraint(c);
 	}
 }

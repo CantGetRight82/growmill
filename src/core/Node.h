@@ -51,6 +51,7 @@ class Node : VarProvider {
 		int idx(Node* child);
 
         Rect rect();
+        Rect local();
 
         double top();
         double right();
@@ -69,5 +70,5 @@ class Node : VarProvider {
     
     std::string getIn(std::string key, std::string val, bool side);
     std::string getOut(std::string key, std::string val, bool side);
-        bool addOutZero(kiwi::Solver* solver, std::string key);
+    void addOutZero(kiwi::Solver* solver, std::string key);
 };

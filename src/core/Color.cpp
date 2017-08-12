@@ -1,11 +1,12 @@
 #include "Color.h"
 
+using std::string;
     
 std::string Color::str() {
-	return std::string("rgb(") +
+	return std::string("rgba(") +
 		std::to_string((int)(r*0xFF)) + "," +
 		std::to_string((int)(g*0xFF)) + "," +
-		std::to_string((int)(b*0xFF)) + ")";
+		std::to_string((int)(b*0xFF)) + "," + std::to_string(a) + ")";
 }
 
 float Color::normal(unsigned char big, unsigned char small) {
@@ -32,6 +33,16 @@ Color Color::fromString(std::string str) {
 		return predefined[str];
 	}
 	
+    string color;
+    double alpha;
+    
+    size_t pos = str.find('.');
+    if(pos !=std::string::npos) {
+        alpha = std::stod( str.substr(pos), 0);
+        str = str.substr(0,pos);
+    } else {
+        alpha = 1;
+    }
 	
 	unsigned char r1,r2,g1,g2,b1,b2;
 	if(str.size() == 4) {
@@ -46,6 +57,6 @@ Color Color::fromString(std::string str) {
 		b1 = parseChar(str[5]);
 		b2 = parseChar(str[6]);
 	}
-	return Color( normal(r1,r2), normal(g1,g2), normal(b1,b2) );
+	return Color( normal(r1,r2), normal(g1,g2), normal(b1,b2), alpha );
 }
 

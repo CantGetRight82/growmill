@@ -78,7 +78,7 @@ Node* NodeParser::parse(AbstractVirtualDisk& disk, string infile) {
 	}
 
 	if(level != 0) {
-		throw "{ and } characters do not match up";
+        throw std::runtime_error("{ and } characters do not match up");
 	}
 
 
@@ -107,7 +107,7 @@ Node* NodeParser::parse(AbstractVirtualDisk& disk, string infile) {
                         if(part.size() == 1) {
                             clone = top->subs.back();
                         } else {
-                            throw "should be recursive from root";
+                            throw std::runtime_error("should be recursive from root");
                             clone = top->find( part.substr(1) );
                         }
                     } else if(part[0] == '#') {
