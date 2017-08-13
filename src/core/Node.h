@@ -18,6 +18,7 @@ class Node : VarProvider {
 		Node* parent;
 		Node* prev;
 		Node* next;
+        bool isTemplate;
     
         std::string tag;
         std::string name;
@@ -39,7 +40,7 @@ class Node : VarProvider {
 
         Node* has(std::string key, bool parents = false);
 
-		Node() : parent(NULL), prev(NULL), next(NULL) {
+		Node() : parent(NULL), prev(NULL), next(NULL), isTemplate(false) {
 			initVars();
 		}
 

@@ -19,7 +19,7 @@ Node* Node::has(string key, bool parents) {
     if(atts.count(key)) {
         return this;
     }
-    if(parents) {
+    if(parents && parent) {
         return parent->has(key, true);
     }
     return NULL;

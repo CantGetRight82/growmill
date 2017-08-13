@@ -108,8 +108,9 @@ class SVGText : public AbstractTextSizer {
         
  
         body << "<g stroke='none'";
-        if(node->has("color")) {
-            body << " fill='" << node->color("color").str() <<"'";
+        Node* colorNode;
+        if( (colorNode = node->has("color",true)) ) {
+            body << " fill='" << colorNode->color("color").str() <<"'";
         }
         body << ">";
         for(yy_glyph_info cg : glyphs) {

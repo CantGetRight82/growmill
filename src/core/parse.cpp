@@ -97,6 +97,8 @@ Node* NodeParser::parse(AbstractVirtualDisk& disk, string infile) {
             Node* node = NULL;
 			Node* clone = NULL;
             
+            bool isTemplate = false;
+            
             string tag("");
             string name("");
             
@@ -110,8 +112,15 @@ Node* NodeParser::parse(AbstractVirtualDisk& disk, string infile) {
                             clone = root->find( part.substr(1) );
                         }
                     } else if(part[0] == '#') {
-                        name = part.substr(1);
-                        node = top->find(name);
+
+                        if(part[1] != '#') {
+                            name = part.substr(1);
+                            node = top->find(name);
+                        } else {
+                            name = part.substr(2);
+                            isTemplate = true;
+                        }
+
                         
                     } else {
                         tag = part;
@@ -127,7 +136,8 @@ Node* NodeParser::parse(AbstractVirtualDisk& disk, string infile) {
                 }
                 node->tag = tag;
                 node->name = name;
-
+                node->isTemplate = isTemplate;
+                
                 if(top) {
                     top->add( node );
                 }

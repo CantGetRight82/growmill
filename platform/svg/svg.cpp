@@ -30,6 +30,12 @@ using std::endl;
 using std::stringstream;
 
 
+std::string defid() {
+    static int inc = 0;
+    inc++;
+    return std::to_string(inc);
+}
+
 
 void renderRectOpen(Node* node, stringstream& body) {
     Rect rect = node->rect();
@@ -51,7 +57,9 @@ void renderPathOpen(Node* node, stringstream& body) {
 }
 
 void render(Node* node, SVGText& text, stringstream& head, stringstream& body) {
+    std::string shadowId;
     if(node->has("shadow")) {
+        shadowId = defid();
         std::vector<std::string> parts = StringTools::split(node->str("shadow"), " ");
         GradientPoint offset = parseGradientPoint(parts[0]);
         
@@ -66,7 +74,7 @@ void render(Node* node, SVGText& text, stringstream& head, stringstream& body) {
         double maxx = fmax( blur, blur + offset.x) + rect.width;
         double maxy = fmax( blur, blur + offset.y) + rect.height;
         
-		head << "<filter id='shadow'"
+		head << "<filter id='"<<shadowId<<"'"
             " x='"<<minx<<"' width='"<<maxx<<"'"
             " y='"<<miny<<"' height='"<<maxy<<"'>"
 			
@@ -101,13 +109,13 @@ void render(Node* node, SVGText& text, stringstream& head, stringstream& body) {
         }
 
 		if(node->has("shadow")) {
-			body << " filter: url(#shadow);";
+			body << " filter: url(#"<<shadowId<<");";
 		}
       
         if(node->has("fill")) {
             std::string fill = node->str("fill");
             if(fill[0] == '(') {
-                std::string gradientId = "grad1";
+                std::string gradientId = defid();
                 std::vector<std::string> parts = StringTools::split(fill," ");
             
                 GradientPoint pt1 = parseGradientPoint(parts[0]);
@@ -143,11 +151,12 @@ void render(Node* node, SVGText& text, stringstream& head, stringstream& body) {
     
    
 	for(Node* n : node->subs) {
-        if(n->tag == "gradient") { continue; }
-		render(n, text, head, body);
+        if(!n->isTemplate) {
+            render(n, text, head, body);
+        }
 	}
-    
-    
+
+
     body << "</g>" << endl;
     
 }
