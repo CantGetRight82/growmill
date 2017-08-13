@@ -20,6 +20,10 @@ vector<yy_glyph_info> SVGText::glyphs(Node* node, float maxw, float* outw, float
     double descender = ftface->descender * fontFactor;
     double height = ftface->height * fontFactor;
     
+    Node* hasKerning = node->has("kerning", true);
+    double kerning = hasKerning ? node->number("kerning") : 0;
+    
+  
     vector<string> lines = StringTools::split(node->str("text"), "\n");
 
     double lastx = 0;
@@ -40,15 +44,18 @@ vector<yy_glyph_info> SVGText::glyphs(Node* node, float maxw, float* outw, float
             
             
 
-            if(FT_HAS_KERNING(ftface) && lastx>0) {
-                FT_Vector vec;
-                FT_Get_Kerning( ftface,
-                               result.back().index, glyph.index,
-                               FT_KERNING_UNFITTED ,&vec);
-                if(vec.x != 0) {
-                    double dx = (vec.x/64.0);
-                    lastx += dx;
+            if(lastx>0) {
+                if(FT_HAS_KERNING(ftface)) {
+                    FT_Vector vec;
+                    FT_Get_Kerning( ftface,
+                                   result.back().index, glyph.index,
+                                   FT_KERNING_UNFITTED ,&vec);
+                    if(vec.x != 0) {
+                        double dx = (vec.x/64.0);
+                        lastx += dx;
+                    }
                 }
+                lastx += kerning;
             }
             
             glyph.x = lastx;

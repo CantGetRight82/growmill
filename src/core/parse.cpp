@@ -107,7 +107,6 @@ Node* NodeParser::parse(AbstractVirtualDisk& disk, string infile) {
                         if(part.size() == 1) {
                             clone = top->subs.back();
                         } else {
-//                            throw std::runtime_error("should be recursive from root");
                             clone = root->find( part.substr(1) );
                         }
                     } else if(part[0] == '#') {

@@ -43,6 +43,13 @@ void renderRectOpen(Node* node, stringstream& body) {
     }
 }
 
+void renderPathOpen(Node* node, stringstream& body) {
+    
+    body << "<path d='"<<node->str("path") <<"'";
+    
+    
+}
+
 void render(Node* node, SVGText& text, stringstream& head, stringstream& body) {
     if(node->has("shadow")) {
         std::vector<std::string> parts = StringTools::split(node->str("shadow"), " ");
@@ -79,10 +86,18 @@ void render(Node* node, SVGText& text, stringstream& head, stringstream& body) {
 //    body << "<g x-trans='"<<rect.x<<" "<<rect.y<<"'>" << endl;
     body << "<g transform='translate("<<rect.x<<","<<rect.y<<")'>" << endl;
     if(node->has("fill") || node->has("stroke")) {
-        renderRectOpen(node, body);
+        if(node->has("path")) {
+            renderPathOpen(node, body);
+        } else {
+            renderRectOpen(node, body);
+        }
         body << " style='";
         if(node->has("stroke")) {
             body << " stroke: "<<node->color("stroke").str()<<";";
+            
+            if(node->has("stroke-width")) {
+                body << " stroke-width: "<<node->number("stroke-width")<<";";
+            }
         }
 
 		if(node->has("shadow")) {
@@ -123,9 +138,7 @@ void render(Node* node, SVGText& text, stringstream& head, stringstream& body) {
     }
     
     if(node->has("text")) {
-        
         text.render(node, head,  body);
-        
     }
     
    
